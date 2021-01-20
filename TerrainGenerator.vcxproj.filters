@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="tekstura.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="shadersLoader.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="terrain.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shaderLoader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="tekstura.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GL\glew.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="terrain.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{8dd89de3-27fe-4be3-b38a-a1f92dda118f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{d8d1da14-284c-4014-a265-2968ccfd4429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{931f2551-252a-4cbf-8d00-9ea60d0d2deb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\fragment_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\height_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\height_vshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\light_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\light_vshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\texture_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\vertex_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

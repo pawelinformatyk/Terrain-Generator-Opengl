@@ -5,8 +5,8 @@
 #include <iostream>
 #include <vector>
 
-#include "GL\glew.h"
-#include "GL\freeglut.h"
+#include "glew.h"
+#include "freeglut.h"
 #include "glm/vec3.hpp" 
 #include "glm/vec4.hpp" 
 

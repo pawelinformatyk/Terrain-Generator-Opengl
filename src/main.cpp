@@ -6,8 +6,8 @@
 #include <iostream>
 #include <vector>
 
-#include "GL\glew.h"
-#include "GL\freeglut.h"
+#include "glew.h"
+#include "freeglut.h"
 #include "glm/vec3.hpp" 
 #include "glm/vec4.hpp" 
 #include "glm/mat4x4.hpp" 
@@ -369,10 +369,10 @@ int main( int argc, char** argv )
 	indices_triangles_size = indices_triangles.size();
 	vertices_size = vertices.size();
 
-	shader_default = loadShaders( "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl" );
-	shader_light = loadShaders( "shaders/light_vshader.glsl", "shaders/light_fshader.glsl" );
-	shader_height = loadShaders( "shaders/height_vshader.glsl", "shaders/height_fshader.glsl" );
-	shader_texture = loadShaders( "shaders/vertex_shader.glsl", "shaders/texture_fshader.glsl" );
+	shader_default = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl" );
+	shader_light = loadShaders( "src/shaders/light_vshader.glsl", "src/shaders/light_fshader.glsl" );
+	shader_height = loadShaders( "src/shaders/height_vshader.glsl", "src/shaders/height_fshader.glsl" );
+	shader_texture = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
 
 	texture_id = WczytajTeksture( "resources/tatry3.bmp" );
 	if( texture_id == -1 )

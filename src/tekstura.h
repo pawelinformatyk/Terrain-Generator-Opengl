@@ -2,8 +2,8 @@
 #include <windows.h>
 
 
-#include "gl/glew.h"
-#include "GL/freeglut.h"
+#include "glew.h"
+#include "freeglut.h"
 #include <gl\gl.h> 
 #include <stdio.h>
 #include <stdlib.h>

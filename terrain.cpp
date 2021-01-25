@@ -3,8 +3,8 @@
 glm::vec3 CalculateNormal( std::vector<glm::vec3>& terr, int x, int z, int step )
 {
 	/*
-	Calculate normals from surroounding points and step in the grid
-	normal = weighed average of the surrounding triangles' normal vectors
+	Calculate normals from surrounding points and step in the grid
+	normal = weighted average of the surrounding triangles' normal vectors
 	//https://stackoverflow.com/questions/6656358/calculating-normals-in-a-triangle-mesh/21660173#21660173
 
 
@@ -25,7 +25,7 @@ glm::vec3 CalculateNormal( std::vector<glm::vec3>& terr, int x, int z, int step 
 	*/
 
 
-	//default = P(x,y)
+	//default = P(x,z)
 	float hl, hr, hd, hu;
 	hl = hr = hd = hu = terr[ x + step * z ].y;
 
@@ -86,7 +86,7 @@ glm::vec3 CalculateNormal( std::vector<glm::vec3>& terr, int x, int z, int step 
 	return  glm::vec3( -(hl - hr) / step, 2.0f, -(hd - hu) / step );
 }
 
-std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3> height_map )
+std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3>& height_map )
 {
 	/*
 	Building grid from x+ to x-. z- to z+

@@ -22,7 +22,8 @@
 int screen_width = 1920/2;
 int screen_height = 1080/2;
 
-int display_mode = 2;
+enum model {model_base,model_texture,model_height,model_wireframe};
+model display_mode;//what model to render 
 
 int mouse_positionX;
 int mouse_positionY;
@@ -39,14 +40,15 @@ GLfloat height_max;
 GLint step;
 GLint vertices_size;
 GLint indices_triangle_strip_size;
+GLint animation_size;
 GLint indices_triangles_size;
 
 GLuint shader_default, shader_light, shader_height, shader_texture;//shader program
 unsigned int VAO_triangle_strip,VAO_triangles, VAO_light;
-GLuint texture;
+GLuint texture_id;
 
 
-void DrawWireframe()
+void DrawWireframeModel()
 {
 	glUseProgram( shader_default );
 
@@ -102,20 +104,19 @@ void DrawModelWithLighting()
 	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
 
 
-	glUseProgram( shader_light );
+	//glUseProgram( shader_light );
 
-	GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
+	//GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
 
-	MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
-	MV = glm::scale( MV, glm::vec3( 1000, 1000, 1000 ) );
-	MV = glm::scale( MV, glm::vec3( 0.45, 0.45, 0.45 ) );
-	MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
-	MVP = P * MV;
+	//MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
+	//MV = glm::scale( MV, glm::vec3( 450, 450, 450 ) );
+	//MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
+	//MVP = P * MV;
 
-	glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+	//glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
 
-	glBindVertexArray( VAO_light );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );
+	//glBindVertexArray( VAO_light );
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );
 }
 
 void DrawHeightModel()
@@ -168,7 +169,7 @@ void DrawModelWithTexture()
 	glUniform1i( step_id, step );
 
 	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, texture );
+	glBindTexture( GL_TEXTURE_2D, texture_id );
 	GLuint uniform_tex = glGetUniformLocation( shader_texture, "tex" );
 	glUniform1i( uniform_tex, 0 );
 
@@ -177,20 +178,19 @@ void DrawModelWithTexture()
 	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
 
 
-	glUseProgram( shader_light );
+	//glUseProgram( shader_light );
 
-	GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
+	//GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
 
-	MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
-	MV = glm::scale( MV, glm::vec3( 1000, 1000, 1000 ) );
-	MV = glm::scale( MV, glm::vec3( 0.45, 0.45, 0.45 ) );
-	MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
-	MVP = P * MV;
+	//MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
+	//MV = glm::scale( MV, glm::vec3( 450, 450, 450 ) );
+	//MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
+	//MVP = P * MV;
 
-	glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+	//glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
 
-	glBindVertexArray( VAO_light );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );
+	//glBindVertexArray( VAO_light );
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );
 }
 
 void Draw( void )
@@ -200,16 +200,16 @@ void Draw( void )
 
 	switch( display_mode )
 	{
-		case 1:
-			DrawWireframe();
+		case model_wireframe:
+			DrawWireframeModel();
 			break;
-		case 2:
+		case model_base:
 			DrawModelWithLighting();
 			break;
-		case 3:
+		case model_height:
 			DrawHeightModel();
 			break;
-		case 4:
+		case model_texture:
 			DrawModelWithTexture();
 			break;
 	}
@@ -218,7 +218,7 @@ void Draw( void )
 	glutSwapBuffers();
 }
 
-void mysz( int button, int state, int x, int y )
+void MouseClick( int button, int state, int x, int y )
 {
 	mbutton = button;
 	switch( state )
@@ -234,7 +234,7 @@ void mysz( int button, int state, int x, int y )
 			break;
 	}
 }
-void mysz_ruch( int x, int y )
+void MouseMovement( int x, int y )
 {
 	if( mbutton == GLUT_LEFT_BUTTON )
 	{
@@ -247,7 +247,7 @@ void mysz_ruch( int x, int y )
 	}
 
 }
-void klawisz( GLubyte key, int x, int y )
+void Keys( GLubyte key, int x, int y )
 {
 	float step = 400;
 	switch( key )
@@ -273,17 +273,17 @@ void klawisz( GLubyte key, int x, int y )
 		case 'e':
 			light_position.y -= step / 2;
 			break;
-		case '1'://siatka trojkatow
-			display_mode = 1;
+		case '1':
+			display_mode = model_base;
 			break;
-		case '2'://model z oswietleniem
-			display_mode = 2;
+		case '2':
+			display_mode = model_texture;
 			break;
-		case '3'://kolory zaleznosc od wysokosci 
-			display_mode = 3;
+		case '3':
+			display_mode =model_height;
 			break;
-		case '4'://tekstura
-			display_mode = 4;
+		case '4':
+			display_mode = model_wireframe;
 			break;
 		case '[':
 			scale -= 0.00001f;
@@ -296,7 +296,7 @@ void klawisz( GLubyte key, int x, int y )
 			break;
 	}
 }
-void rozmiar( int width, int height )
+void ScreenSize( int width, int height )
 {
 	screen_width = width;
 	screen_height = height;
@@ -345,22 +345,24 @@ int main( int argc, char** argv )
 	glutInitWindowPosition( 0, 0 );
 	glutCreateWindow( "Terrain Generator" );
 
-	glewInit(); //init rozszerzeszeń OpenGL z biblioteki GLEW
+	glewInit(); 
 
-	glutDisplayFunc( Draw );			// def. funkcji rysuj¦cej
-	glutIdleFunc( idle );			// def. funkcji rysuj¦cej w czasie wolnym procesoora (w efekcie: ci¦gle wykonywanej)
-	glutReshapeFunc( rozmiar ); // def. obs-ugi zdarzenia resize (GLUT)
+	glutDisplayFunc( Draw );		
+	glutIdleFunc( idle );			
+	glutReshapeFunc( ScreenSize ); 
 	glutTimerFunc( 10,timer, 0 );
-	glutKeyboardFunc( klawisz );		// def. obsługi klawiatury
-	glutMouseFunc( mysz ); 		// def. obsługi zdarzenia przycisku myszy (GLUT)
-	glutMotionFunc( mysz_ruch ); // def. obsługi zdarzenia ruchu myszy (GLUT)
+	glutKeyboardFunc( Keys );	
+	glutMouseFunc( MouseClick ); 		
+	glutMotionFunc( MouseMovement ); 
 
 	glEnable( GL_DEPTH_TEST );
 
 
 	std::vector<glm::vec3>vertices = CreateTerrainFromFile( "resources/tatry.txt" );
+
 	std::vector<GLuint> indices_triangle_strip = BuildIndicesForTriangleStrip( vertices.size() / 2 );
 	std::vector<GLuint> indices_triangles = BuildIndicesForTriangles( vertices.size() / 2 );
+
 	height_max = FindMaxHeight( vertices );
 	step = GLint(vertices[ 2 ].x - vertices[ 0 ].x);
 	indices_triangle_strip_size = indices_triangle_strip.size();
@@ -372,10 +374,10 @@ int main( int argc, char** argv )
 	shader_height = loadShaders( "shaders/height_vshader.glsl", "shaders/height_fshader.glsl" );
 	shader_texture = loadShaders( "shaders/vertex_shader.glsl", "shaders/texture_fshader.glsl" );
 
-	texture = WczytajTeksture( "resources/tatry3.bmp" );
-	if( texture == -1 )
+	texture_id = WczytajTeksture( "resources/tatry3.bmp" );
+	if( texture_id == -1 )
 	{
-		MessageBox( NULL, "Nie znaleziono pliku z teksturą", "Problem", MB_OK | MB_ICONERROR );
+		MessageBox( NULL, "Texture file not found", "Problem", MB_OK | MB_ICONERROR );
 		exit( 0 );
 	}
 

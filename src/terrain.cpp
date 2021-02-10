@@ -95,7 +95,7 @@ std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3>& height_map )
 	x->*/
 
 	int step = (int)sqrt( height_map.size() );
-	int start = -1 * (height_map.size() / 2);
+	int start = -1 * (height_map.size() / 2)+step/2;//even points on either sides of axis 
 
 	std::vector<glm::vec3> vertices;
 	vertices.reserve( 2 * height_map.size() );
@@ -149,14 +149,26 @@ std::vector<glm::vec3> CreateTerrainFromFile( std::string file_name )
 
 float FindMaxHeight( std::vector<glm::vec3>& ver )
 {
-	static float max = 0;
+	float max = ver[ 0 ].y;
 
-	for( glm::vec3& v : ver )
+	for( size_t i=2;i<ver.size();i+=2)
 	{
-		if( v.y > max ) max = v.y;
+		if( ver[i].y > max ) max = ver[i].y;
 	}
 
 	return max;
+}
+
+float FindMinHeight( std::vector<glm::vec3>& ver )
+{
+	float min = ver[ 0 ].y;
+
+	for( size_t i = 2; i < ver.size(); i += 2 )
+	{
+		if( ver[ i ].y < min ) min = ver[ i ].y;
+	}
+
+	return min;
 }
 
 std::vector<GLuint> BuildIndicesForTriangleStrip( GLuint size )
@@ -181,30 +193,29 @@ std::vector<GLuint> BuildIndicesForTriangleStrip( GLuint size )
 	GLuint step = (GLuint)sqrt( size );
 
 	//first strip 
-	for( GLuint i = 1; i < step; i++ )
-	{
-		ind.push_back( i );
-		ind.push_back( i + step - 1 );
-	}
+	//for( GLuint i = 1; i < step; i++ )
+	//{
+	//	ind.push_back( i );
+	//	ind.push_back( i + step - 1 );
+	//}
 
-	ind.push_back( 2 * step - 1 );
-	ind.push_back( 2 * step - 1 );
-	ind.push_back( step );
+	//ind.push_back( 2 * step - 1 );
+	//ind.push_back( 2 * step - 1 );
+	//ind.push_back( step );
 
-	//rest of strips
-	for( GLuint i = step;; i++ )
+	for( GLuint i = 0;; i++ )
 	{
 		ind.push_back( i );
 		ind.push_back( i + step );
 
 		if( (i + step) == size )break;
-		if( (i + step + 1) % step != 0 )continue;
+		if( (i+step+1) % step != 0 )continue;
 
 		ind.push_back( i + step );
 		ind.push_back( i + 1 );
 	}
 
-	return ind;
+	return ind;//{ 0,3,1,4,2,5, 5,3, 3,6,4,7,5,8 };
 }
 
 std::vector<GLuint> BuildIndicesForTriangles( GLuint size )

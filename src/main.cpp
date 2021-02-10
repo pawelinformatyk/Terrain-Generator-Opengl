@@ -31,16 +31,16 @@ int mbutton;
 double cameraX, cameraZ, cameraD, previous_cameraX, previous_cameraZ, previous_cameraD;
 
 glm::mat4 P;
-glm::vec3 light_position( 8500, 13000, 40000 );
-float scale = 0.000125f;
-float rotation;
+glm::vec3 light_position(1 );
+float scale = 1.f;
+float rotation=30;
 GLfloat ad;//variable to control animation
 
 GLfloat height_max;
+GLfloat height_min;
 GLint step;
 GLint vertices_size;
 GLint indices_triangle_strip_size;
-GLint animation_size;
 GLint indices_triangles_size;
 
 GLuint shader_default, shader_light, shader_height, shader_texture;//shader program
@@ -59,10 +59,10 @@ void DrawWireframeModel()
 	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
 
 	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4.4 ) );
+	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 0.0001, scale, 0.0001 ) );
+	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
 	glm::mat4 MVP = P * MV;
 
 	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
@@ -87,36 +87,21 @@ void DrawModelWithLighting()
 	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
 
 	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4.4 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraZ +25 ), glm::vec3( 1, 0, 0 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 0.0001, scale, 0.0001 ) );
+	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1/(5*height_max-height_min) * scale, 8./vertices_size ) );
 	glm::mat4 MVP = P * MV;
 
 	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform3f( objectColor_id, 0, 1, 0 );
+	glUniform3f( objectColor_id, 0, 0.5f, 0 );
 	glUniform3f( lightColor_id, 1, 1, 1 );
-	glUniform3f( lightPos_id, light_position.x, light_position.y / 2, light_position.z );
+	glUniform3f( lightPos_id, vertices_size/2 * light_position.x, 10*height_max * scale *light_position.y, vertices_size/2 *light_position.z );
 	glUniform3f( viewPos_id, 0, 10000, 500000 );
 
 	glBindVertexArray( VAO_triangle_strip );
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
-
-
-	//glUseProgram( shader_light );
-
-	//GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
-
-	//MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
-	//MV = glm::scale( MV, glm::vec3( 450, 450, 450 ) );
-	//MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
-	//MVP = P * MV;
-
-	//glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-
-	//glBindVertexArray( VAO_light );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );
 }
 
 void DrawHeightModel()
@@ -127,10 +112,10 @@ void DrawHeightModel()
 	GLuint max_id = glGetUniformLocation( shader_height, "maximum" );
 
 	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4.4 ) );
+	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 0.0001, scale, 0.0001 ) );
+	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
 	glm::mat4 MVP = P * MV;
 
 	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
@@ -154,10 +139,10 @@ void DrawModelWithTexture()
 	GLuint step_id = glGetUniformLocation( shader_texture, "terrain_step" );
 
 	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4.4 ) );
+	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 0.0001, scale, 0.0001 ) );
+	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
 	glm::mat4 MVP = P * MV;
 
 	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
@@ -176,21 +161,6 @@ void DrawModelWithTexture()
 	glBindVertexArray( VAO_triangle_strip );
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
-
-
-	//glUseProgram( shader_light );
-
-	//GLuint MVPlamp_id = glGetUniformLocation( shader_light, "MVP" );
-
-	//MV = glm::translate( MV, glm::vec3( light_position.x, light_position.y * 10, light_position.z ) );
-	//MV = glm::scale( MV, glm::vec3( 450, 450, 450 ) );
-	//MV = glm::rotate( MV, (float)glm::radians( 45.f ), glm::vec3( 0, 1, 0 ) );
-	//MVP = P * MV;
-
-	//glUniformMatrix4fv( MVPlamp_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-
-	//glBindVertexArray( VAO_light );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );
 }
 
 void Draw( void )
@@ -249,29 +219,28 @@ void MouseMovement( int x, int y )
 }
 void Keys( GLubyte key, int x, int y )
 {
-	float step = 400;
 	switch( key )
 	{
-		case 27:    /* Esc - koniec */
+		case 27:    /* Esc - end */
 			exit( 1 );
 			break;
 		case 'w':
-			light_position.z += step;
+			light_position.z +=0.01f * scale;
 			break;
 		case 's':
-			light_position.z -= step;
+			light_position.z -= 0.01f * scale;
 			break;
 		case 'a':
-			light_position.x += step;
+			light_position.x += 0.01f * scale;
 			break;
 		case 'd':
-			light_position.x -= step;
+			light_position.x -= 0.01f * scale;
 			break;
 		case 'q':
-			light_position.y += step / 2;
+			light_position.y += 0.05f * scale;
 			break;
 		case 'e':
-			light_position.y -= step / 2;
+			light_position.y -= 0.05f*scale;
 			break;
 		case '1':
 			display_mode = model_base;
@@ -286,10 +255,10 @@ void Keys( GLubyte key, int x, int y )
 			display_mode = model_wireframe;
 			break;
 		case '[':
-			scale -= 0.00001f;
+			scale -= 0.1f;
 			break;
 		case ']':
-			scale += 0.00001f;
+			scale += 0.1f;
 			break;
 		case ' ':
 			ad = (ad == 0.3f) ? 0 : 0.3f;
@@ -364,6 +333,7 @@ int main( int argc, char** argv )
 	std::vector<GLuint> indices_triangles = BuildIndicesForTriangles( vertices.size() / 2 );
 
 	height_max = FindMaxHeight( vertices );
+	height_min = FindMinHeight( vertices );
 	step = GLint(vertices[ 2 ].x - vertices[ 0 ].x);
 	indices_triangle_strip_size = indices_triangle_strip.size();
 	indices_triangles_size = indices_triangles.size();

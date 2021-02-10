@@ -12,5 +12,6 @@
 
 std::vector<glm::vec3> CreateTerrainFromFile( std::string );
 float FindMaxHeight( std::vector<glm::vec3>& ver );
+float FindMinHeight( std::vector<glm::vec3>& ver );
 std::vector<GLuint> BuildIndicesForTriangleStrip( GLuint size );
 std::vector<GLuint> BuildIndicesForTriangles( GLuint size );

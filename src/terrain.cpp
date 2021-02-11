@@ -1,6 +1,6 @@
 #include "terrain.h"
 
-glm::vec3 CalculateNormal( std::vector<glm::vec3>& terr, int x, int z, int step )
+glm::vec3 CalculateNormal( std::vector<float>& terr, int x, int z, int step )
 {
 	/*
 	Calculate normals from surrounding points and step in the grid
@@ -27,66 +27,66 @@ glm::vec3 CalculateNormal( std::vector<glm::vec3>& terr, int x, int z, int step 
 
 	//default = P(x,z)
 	float hl, hr, hd, hu;
-	hl = hr = hd = hu = terr[ x + step * z ].y;
+	hl = hr = hd = hu = terr[ x + step * z ];
 
 	//calculate height of surrounding points
 	if( x == 0 && z == 0 )
 	{
-		hr = terr[ 1 ].y;
-		hu = terr[ step ].y;
+		hr = terr[ 1 ];
+		hu = terr[ step ];
 	}
 	else if( x == 0 && z == step - 1 )
 	{
-		hd = terr[ step * (step - 2) ].y;
-		hr = terr[ step * (step - 1) + 1 ].y;
+		hd = terr[ step * (step - 2) ];
+		hr = terr[ step * (step - 1) + 1 ];
 	}
 	else if( x == step - 1 && z == 0 )
 	{
-		hl = terr[ step - 2 ].y;
-		hu = terr[ 2 * step - 1 ].y;
+		hl = terr[ step - 2 ];
+		hu = terr[ 2 * step - 1 ];
 	}
 	else if( x == step - 1 && z == step - 1 )
 	{
-		hl = terr[ step * step - 2 ].y;
-		hd = terr[ step * (step - 1) - 1 ].y;
+		hl = terr[ step * step - 2 ];
+		hd = terr[ step * (step - 1) - 1 ];
 	}
 	else if( z == 0 )
 	{
-		hl = terr[ x - 1 ].y;
-		hu = terr[ x + step ].y;
-		hr = terr[ x + 1 ].y;
+		hl = terr[ x - 1 ];
+		hu = terr[ x + step ];
+		hr = terr[ x + 1 ];
 	}
 	else if( z == step - 1 )
 	{
-		hl = terr[ x - 1 ].y;
-		hd = terr[ (z - 1) * step + x ].y;
-		hr = terr[ x + 1 ].y;
+		hl = terr[ x - 1 ];
+		hd = terr[ (z - 1) * step + x ];
+		hr = terr[ x + 1 ];
 	}
 	else if( x == 0 )
 	{
-		hu = terr[ step * (z + 1) ].y;
-		hd = terr[ step * (z - 1) ].y;
-		hr = terr[ step * z + 1 ].y;
+		hu = terr[ step * (z + 1) ];
+		hd = terr[ step * (z - 1) ];
+		hr = terr[ step * z + 1 ];
 	}
 	else if( x == step - 1 )
 	{
-		hu = terr[ step * (z + 1) ].y;
-		hd = terr[ step * (z - 1) ].y;
-		hl = terr[ step * z - 1 ].y;
+		hu = terr[ step * (z + 1) ];
+		hd = terr[ step * (z - 1) ];
+		hl = terr[ step * z - 1 ];
 	}
 	else
 	{
-		hl = terr[ x - 1 + step * z ].y;
-		hr = terr[ x + 1 + step * z ].y;
-		hd = terr[ (z + 1) * step + x ].y;
-		hu = terr[ (z - 1) * step + x ].y;
+		hl = terr[ x - 1 + step * z ];
+		hr = terr[ x + 1 + step * z ];
+		hd = terr[ (z + 1) * step + x ];
+		hu = terr[ (z - 1) * step + x ];
 	}
 
 	//this is basically sum of normals of adjecent triangles 
 	return  glm::vec3( -(hl - hr) / step, 2.0f, -(hd - hu) / step );
 }
 
-std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3>& height_map )
+std::vector<glm::vec3> BuildMesh( std::vector<float>& height_map )
 {
 	/*
 	Building grid from x+ to x-. z- to z+
@@ -104,7 +104,7 @@ std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3>& height_map )
 	{
 		for( int j = 0, xi = -start; j < step; j++, xi -= step, z++ )
 		{
-			vertices.emplace_back( xi, height_map[ z ].y, zi );
+			vertices.emplace_back( xi, height_map[ z ], zi );
 			vertices.emplace_back( CalculateNormal( height_map, j, i, step ) );
 		}
 	}
@@ -112,7 +112,7 @@ std::vector<glm::vec3> BuildMesh( std::vector<glm::vec3>& height_map )
 	return vertices;
 }
 
-std::vector<glm::vec3> CreateHeightMapFromFile( std::string file_name )
+std::vector<float> CreateHeightMapFromFile( std::string file_name )
 {
 	/*file contains x,z,y coordinates */
 
@@ -123,22 +123,22 @@ std::vector<glm::vec3> CreateHeightMapFromFile( std::string file_name )
 		exit( 1 );
 	}
 
-	std::vector<glm::vec3> coord{};
+	std::vector<float> map;
 	for( int i = 0; 1; i++ )
 	{
 		if( file.eof() )break;
 
-		float x, y, z;
-		file >> x;
-		file >> z;
+		float y;
+		file >> y;
+		file >> y;
 		file >> y;
 
-		coord.emplace_back( x, y, z );
+		map.push_back( y );
 	}
 
 	file.close();
 
-	return coord;
+	return map;
 }
 
 std::vector<glm::vec3> CreateTerrainFromFile( std::string file_name )

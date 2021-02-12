@@ -18,12 +18,10 @@
 #include "terrain.h"
 
 
+
 //control variables 
 int screen_width = 1920/2;
 int screen_height = 1080/2;
-
-enum model {model_base,model_texture,model_height,model_wireframe};
-model display_mode;//what model to render 
 
 int mouse_positionX;
 int mouse_positionY;
@@ -36,153 +34,154 @@ float scale = 1.f;
 float rotation=30;
 GLfloat ad;//variable to control animation
 
-GLfloat height_max;
-GLfloat height_min;
-GLint step;
-GLint vertices_size;
-GLint indices_triangle_strip_size;
-GLint indices_triangles_size;
+Terrain* terrain;
 
 GLuint shader_default, shader_light, shader_height, shader_texture;//shader program
-unsigned int VAO_triangle_strip,VAO_triangles, VAO_light;
-GLuint texture_id;
+unsigned int VAO_light;
 
-
-void DrawWireframeModel()
-{
-	glUseProgram( shader_default );
-
-	GLuint MVP_id = glGetUniformLocation( shader_default, "MVP" );
-	GLuint objectColor_id = glGetUniformLocation( shader_default, "objectColor" );
-	GLuint lightColor_id = glGetUniformLocation( shader_default, "lightColor" );
-	GLuint lightPos_id = glGetUniformLocation( shader_default, "lightPos" );
-	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
-
-	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
-	glm::mat4 MVP = P * MV;
-
-	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform3f( objectColor_id, 0, 1, 0 );
-	glUniform3f( lightColor_id, 0, 0, 0 );
-	glUniform3f( lightPos_id, 0, 0, 0 );
-	glUniform3f( viewPos_id, 0, 0, 0 );
-
-	glBindVertexArray( VAO_triangles );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	glDrawElements( GL_TRIANGLES, indices_triangles_size, GL_UNSIGNED_INT, 0 );
-}
-
-void DrawModelWithLighting()
-{
-	glUseProgram( shader_default );
-
-	GLuint MVP_id = glGetUniformLocation( shader_default, "MVP" );
-	GLuint objectColor_id = glGetUniformLocation( shader_default, "objectColor" );
-	GLuint lightColor_id = glGetUniformLocation( shader_default, "lightColor" );
-	GLuint lightPos_id = glGetUniformLocation( shader_default, "lightPos" );
-	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
-
-	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraZ +25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1/(5*height_max-height_min) * scale, 8./vertices_size ) );
-	glm::mat4 MVP = P * MV;
-
-	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform3f( objectColor_id, 0, 0.5f, 0 );
-	glUniform3f( lightColor_id, 1, 1, 1 );
-	glUniform3f( lightPos_id, vertices_size/2 * light_position.x, 10*height_max * scale *light_position.y, vertices_size/2 *light_position.z );
-	glUniform3f( viewPos_id, 0, 10000, 500000 );
-
-	glBindVertexArray( VAO_triangle_strip );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
-}
-
-void DrawHeightModel()
-{
-	glUseProgram( shader_height );
-
-	GLuint MVP_id = glGetUniformLocation( shader_height, "MVP" );
-	GLuint max_id = glGetUniformLocation( shader_height, "maximum" );
-
-	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
-	glm::mat4 MVP = P * MV;
-
-	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform1f( max_id, height_max );
-
-	glBindVertexArray( VAO_triangle_strip );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
-}
-
-void DrawModelWithTexture()
-{
-	glUseProgram( shader_texture );
-
-	GLuint MVP_id = glGetUniformLocation( shader_texture, "MVP" );
-	GLuint objectColor_id = glGetUniformLocation( shader_texture, "objectColor" );
-	GLuint lightColor_id = glGetUniformLocation( shader_texture, "lightColor" );
-	GLuint lightPos_id = glGetUniformLocation( shader_texture, "lightPos" );
-	GLuint viewPos_id = glGetUniformLocation( shader_texture, "viewPos" );
-	GLuint size_id = glGetUniformLocation( shader_texture, "terrain_size" );
-	GLuint step_id = glGetUniformLocation( shader_texture, "terrain_step" );
-
-	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
-	glm::mat4 MVP = P * MV;
-
-	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform3f( objectColor_id, 0.5, 0.5, 0.5 );
-	glUniform3f( lightColor_id, 1, 1, 1 );
-	glUniform3f( lightPos_id, light_position.x, light_position.y, light_position.z );
-	glUniform3f( viewPos_id, 0, 10000, 500000 );
-	glUniform1i( size_id, vertices_size / 2 );
-	glUniform1i( step_id, step );
-
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, texture_id );
-	GLuint uniform_tex = glGetUniformLocation( shader_texture, "tex" );
-	glUniform1i( uniform_tex, 0 );
-
-	glBindVertexArray( VAO_triangle_strip );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
-}
+//void DrawWireframeModel()
+//{
+//	glUseProgram( shader_default );
+//
+//	GLuint MVP_id = glGetUniformLocation( shader_default, "MVP" );
+//	GLuint objectColor_id = glGetUniformLocation( shader_default, "objectColor" );
+//	GLuint lightColor_id = glGetUniformLocation( shader_default, "lightColor" );
+//	GLuint lightPos_id = glGetUniformLocation( shader_default, "lightPos" );
+//	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
+//
+//	glm::mat4 MV = glm::mat4( 1.0f );
+//	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+//	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
+//	glm::mat4 MVP = P * MV;
+//
+//	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+//	glUniform3f( objectColor_id, 0, 1, 0 );
+//	glUniform3f( lightColor_id, 0, 0, 0 );
+//	glUniform3f( lightPos_id, 0, 0, 0 );
+//	glUniform3f( viewPos_id, 0, 0, 0 );
+//
+//	glBindVertexArray( VAO_triangles );
+//	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+//	glDrawElements( GL_TRIANGLES, indices_triangles_size, GL_UNSIGNED_INT, 0 );
+//}
+//
+//void DrawModelWithLighting()
+//{
+//	glUseProgram( shader_default );
+//
+//	GLuint MVP_id = glGetUniformLocation( shader_default, "MVP" );
+//	GLuint objectColor_id = glGetUniformLocation( shader_default, "objectColor" );
+//	GLuint lightColor_id = glGetUniformLocation( shader_default, "lightColor" );
+//	GLuint lightPos_id = glGetUniformLocation( shader_default, "lightPos" );
+//	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
+//
+//	glm::mat4 MV = glm::mat4( 1.0f );
+//	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraZ +25 ), glm::vec3( 1, 0, 0 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+//	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1/(5*height_max-height_min) * scale, 8./vertices_size ) );
+//	glm::mat4 MVP = P * MV;
+//
+//	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+//	glUniform3f( objectColor_id, 0, 0.5f, 0 );
+//	glUniform3f( lightColor_id, 1, 1, 1 );
+//	glUniform3f( lightPos_id, vertices_size/2 * light_position.x, 10*height_max * scale *light_position.y, vertices_size/2 *light_position.z );
+//	glUniform3f( viewPos_id, 0, 10000, 500000 );
+//
+//	glBindVertexArray( VAO_triangle_strip );
+//	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+//	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
+//}
+//
+//void DrawHeightModel()
+//{
+//	glUseProgram( shader_height );
+//
+//	GLuint MVP_id = glGetUniformLocation( shader_height, "MVP" );
+//	GLuint max_id = glGetUniformLocation( shader_height, "maximum" );
+//
+//	glm::mat4 MV = glm::mat4( 1.0f );
+//	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+//	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
+//	glm::mat4 MVP = P * MV;
+//
+//	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+//	glUniform1f( max_id, height_max );
+//
+//	glBindVertexArray( VAO_triangle_strip );
+//	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+//	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
+//}
+//
+//void DrawModelWithTexture()
+//{
+//	glUseProgram( shader_texture );
+//
+//	GLuint MVP_id = glGetUniformLocation( shader_texture, "MVP" );
+//	GLuint objectColor_id = glGetUniformLocation( shader_texture, "objectColor" );
+//	GLuint lightColor_id = glGetUniformLocation( shader_texture, "lightColor" );
+//	GLuint lightPos_id = glGetUniformLocation( shader_texture, "lightPos" );
+//	GLuint viewPos_id = glGetUniformLocation( shader_texture, "viewPos" );
+//	GLuint size_id = glGetUniformLocation( shader_texture, "terrain_size" );
+//	GLuint step_id = glGetUniformLocation( shader_texture, "terrain_step" );
+//
+//	glm::mat4 MV = glm::mat4( 1.0f );
+//	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+//	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+//	MV = glm::scale( MV, glm::vec3( 8. / vertices_size, 1 / (5 * height_max - height_min) * scale, 8. / vertices_size ) );
+//	glm::mat4 MVP = P * MV;
+//
+//	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+//	glUniform3f( objectColor_id, 0.5, 0.5, 0.5 );
+//	glUniform3f( lightColor_id, 1, 1, 1 );
+//	glUniform3f( lightPos_id, light_position.x, light_position.y, light_position.z );
+//	glUniform3f( viewPos_id, 0, 10000, 500000 );
+//	glUniform1i( size_id, vertices_size / 2 );
+//	glUniform1i( step_id, step );
+//
+//	glActiveTexture( GL_TEXTURE0 );
+//	glBindTexture( GL_TEXTURE_2D, texture_id );
+//	GLuint uniform_tex = glGetUniformLocation( shader_texture, "tex" );
+//	glUniform1i( uniform_tex, 0 );
+//
+//	glBindVertexArray( VAO_triangle_strip );
+//	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+//	glDrawElements( GL_TRIANGLE_STRIP, indices_triangle_strip_size, GL_UNSIGNED_INT, 0 );
+//}
 
 void Draw( void )
 {
 	glClearColor( 0.2f, 0.2f, 0.2f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	switch( display_mode )
-	{
-		case model_wireframe:
-			DrawWireframeModel();
-			break;
-		case model_base:
-			DrawModelWithLighting();
-			break;
-		case model_height:
-			DrawHeightModel();
-			break;
-		case model_texture:
-			DrawModelWithTexture();
-			break;
-	}
+	glUseProgram( shader_default );
+
+	GLuint MVP_id = glGetUniformLocation( shader_default, "MVP" );
+	GLuint objectColor_id = glGetUniformLocation( shader_default, "objectColor" );
+	GLuint lightColor_id = glGetUniformLocation( shader_default, "lightColor" );
+	GLuint lightPos_id = glGetUniformLocation( shader_default, "lightPos" );
+	GLuint viewPos_id = glGetUniformLocation( shader_default, "viewPos" );
+
+	float height_max = terrain->getMaxHeight();
+	glm::mat4 MV = glm::mat4( 1.0f );
+	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+	MV = glm::scale( MV, glm::vec3( 4. / terrain->getSizeVertices(), 1 / (5 * height_max - terrain->getMinHeight()) * scale, 4. / terrain->getSizeVertices() ) );
+	glm::mat4 MVP = P * MV;
+
+	glUniformMatrix4fv( MVP_id, 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
+	glUniform3f( objectColor_id, 0, 0.5f, 0 );
+	glUniform3f( lightColor_id, 1, 1, 1 );
+	glUniform3f( lightPos_id, terrain->getSizeVertices() * light_position.x, 10 * height_max * scale * light_position.y, terrain->getSizeVertices() * light_position.z );
+	glUniform3f( viewPos_id, 0, 10000, 500000 );
+
+	terrain->draw();
 
 	glFlush();
 	glutSwapBuffers();
@@ -242,18 +241,18 @@ void Keys( GLubyte key, int x, int y )
 		case 'e':
 			light_position.y -= 0.05f*scale;
 			break;
-		case '1':
-			display_mode = model_base;
-			break;
-		case '2':
-			display_mode = model_texture;
-			break;
-		case '3':
-			display_mode =model_height;
-			break;
-		case '4':
-			display_mode = model_wireframe;
-			break;
+		//case '1':
+		//	display_mode = model_base;
+		//	break;
+		//case '2':
+		//	display_mode = model_texture;
+		//	break;
+		//case '3':
+		//	display_mode =model_height;
+		//	break;
+		//case '4':
+		//	display_mode = model_wireframe;
+		//	break;
 		case '[':
 			scale -= 0.1f;
 			break;
@@ -326,66 +325,21 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
-
-	std::vector<glm::vec3>vertices = CreateTerrainFromFile( "resources/tatry.txt" );
-
-	std::vector<GLuint> indices_triangle_strip = BuildIndicesForTriangleStrip( vertices.size() / 2 );
-	std::vector<GLuint> indices_triangles = BuildIndicesForTriangles( vertices.size() / 2 );
-
-	height_max = FindMaxHeight( vertices );
-	height_min = FindMinHeight( vertices );
-	step = GLint(vertices[ 2 ].x - vertices[ 0 ].x);
-	indices_triangle_strip_size = indices_triangle_strip.size();
-	indices_triangles_size = indices_triangles.size();
-	vertices_size = vertices.size();
+	terrain = new Terrain( "resources/tatry.txt" );
 
 	shader_default = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl" );
 	shader_light = loadShaders( "src/shaders/light_vshader.glsl", "src/shaders/light_fshader.glsl" );
 	shader_height = loadShaders( "src/shaders/height_vshader.glsl", "src/shaders/height_fshader.glsl" );
 	shader_texture = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
 
-	texture_id = WczytajTeksture( "resources/tatry3.bmp" );
-	if( texture_id == -1 )
-	{
-		MessageBox( NULL, "Texture file not found", "Problem", MB_OK | MB_ICONERROR );
-		exit( 0 );
-	}
+	//texture_id = WczytajTeksture( "resources/tatry3.bmp" );
+	//if( texture_id == -1 )
+	//{
+	//	MessageBox( NULL, "Texture file not found", "Problem", MB_OK | MB_ICONERROR );
+	//	exit( 0 );
+	//}
 
-	unsigned int VBO, ebo1,ebo2, VBO_light_source;
-
-	glGenVertexArrays( 1, &VAO_triangle_strip );
-	glGenVertexArrays( 1, &VAO_triangles );
-
-	glGenBuffers( 1, &VBO );
-	glBindBuffer( GL_ARRAY_BUFFER, VBO );
-	glBufferData( GL_ARRAY_BUFFER, vertices.size() * sizeof( glm::vec3 ), &vertices.data()[ 0 ], GL_STATIC_DRAW );
-	glGenBuffers( 1, &ebo1 );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo1 );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices_triangle_strip.size() * sizeof( GLuint ), &indices_triangle_strip.data()[ 0 ], GL_STATIC_DRAW );
-	glGenBuffers( 1, &ebo2 );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo2 );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices_triangles.size() * sizeof( GLuint ), &indices_triangles.data()[ 0 ], GL_STATIC_DRAW );
-
-	glBindVertexArray( VAO_triangle_strip );
-	glBindBuffer( GL_ARRAY_BUFFER, VBO );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo1 );
-	//position
-	glEnableVertexAttribArray( 0 );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( float ), (void*)0 );
-	//normal
-	glEnableVertexAttribArray( 1 );
-	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( float ), (void*)(3 * sizeof( float )) );
-
-	glBindVertexArray( VAO_triangles );
-	glBindBuffer( GL_ARRAY_BUFFER, VBO );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo2 );
-	//position
-	glEnableVertexAttribArray( 0 );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( float ), (void*)0 );
-	//normal
-	glEnableVertexAttribArray( 1 );
-	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( float ), (void*)(3 * sizeof( float )) );
-
+	unsigned int VBO_light_source;
 	float cube[] = {
 		-0.5f, -0.5f, -0.5f,
 		0.5f, -0.5f, -0.5f,
@@ -443,12 +397,9 @@ int main( int argc, char** argv )
 
 	glutMainLoop();
 
-	glDeleteVertexArrays( 1, &VAO_triangle_strip );
-	glDeleteVertexArrays( 1, &VAO_triangles );
+	delete terrain;
+
 	glDeleteVertexArrays( 1, &VAO_light );
-	glDeleteBuffers( 1, &VBO );
-	glDeleteBuffers( 1, &ebo1 );
-	glDeleteBuffers( 1, &ebo2 );
 	glDeleteBuffers( 1, &VBO_light_source );
 
 	return 0;

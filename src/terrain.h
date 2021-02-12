@@ -1,17 +1,65 @@
 #pragma once
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
 #include <vector>
 
 #include "glew.h"
 #include "freeglut.h"
 #include "glm/vec3.hpp" 
-#include "glm/vec4.hpp" 
 
-std::vector<glm::vec3> CreateTerrainFromFile( std::string );
-float FindMaxHeight( std::vector<glm::vec3>& ver );
-float FindMinHeight( std::vector<glm::vec3>& ver );
-std::vector<GLuint> BuildIndicesForTriangleStrip( GLuint size );
-std::vector<GLuint> BuildIndicesForTriangles( GLuint size );
+enum Model
+{
+	model_base, model_texture, model_height, model_wireframe
+};
+
+struct Vertex
+{
+	glm::vec3 pos;
+	glm::vec3 norm;
+
+	Vertex( glm::vec3 p, glm::vec3 n ) :pos( p ), norm( n ) {};
+};
+
+class Terrain
+{
+private:
+	std::vector<Vertex> vertices;
+	std::vector<GLuint> indices;
+	std::vector<float> height_map;
+
+	unsigned int VAO, VBO, EBO;
+
+	float max_height;
+	float min_height;
+	int step;
+
+	Model draw_model;
+
+	void drawWireframe();
+	void drawClean();
+	void drawHeight();
+
+	void buildIndices();
+	void buildMesh();
+	void setup();
+	void getHeightMapFromFile(std::string file_name);
+	
+	glm::vec3 calculateNormal( int x, int z );
+
+public:
+	Terrain( std::string file_name );
+	Terrain( int size, bool random_generate = false );
+	~Terrain();
+
+	void draw();
+	float getMaxHeight();
+	float getMinHeight();
+	int getSizeIndices();
+	int getSizeVertices();
+	int getStep();
+
+};
+
+
+
+
+

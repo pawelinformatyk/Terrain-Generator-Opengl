@@ -12,6 +12,7 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\noise.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL\glew.h">
@@ -178,6 +179,7 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="src\shader.h" />
+    <ClInclude Include="src\noise.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

@@ -7,11 +7,14 @@
 
 class Shader
 {
-public:
+private:
 	unsigned int ID;
+
+public:
 
 	Shader( const char* vertex_path, const char* fragment_path );
 	
+    unsigned int getID()const{ return ID; };
     void use()
     {
         glUseProgram( ID );

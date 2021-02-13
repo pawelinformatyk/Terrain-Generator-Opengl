@@ -4,7 +4,7 @@
 
 #include "glew.h"
 #include "freeglut.h"
-#include "glm/vec3.hpp" 
+#include "glm/glm.hpp" 
 
 enum Model 
 {
@@ -36,7 +36,8 @@ private:
 	void buildIndices();
 	void buildMesh();
 	void setup();
-	void getHeightMapFromFile(std::string file_name);
+	void setHeightMapFromFile(std::string file_name);
+	void setHeightMapRandom(int size);
 
 	glm::vec3 calculateNormal( int x, int z );
 

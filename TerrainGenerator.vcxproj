@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\noise.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\texture.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="Dependencies\include\glxew.h" />
     <ClInclude Include="Dependencies\include\wglew.h" />
     <ClInclude Include="GL\glew.h" />
+    <ClInclude Include="src\noise.h" />
     <ClInclude Include="src\shader.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\terrain.h" />

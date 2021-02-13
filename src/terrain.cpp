@@ -1,15 +1,25 @@
 #include <iostream>
 #include <fstream>
-#include <math.h>
+#include <algorithm>
 
 #include "terrain.h"
+#include "noise.h"
 
 Terrain::Terrain( std::string file_name )
 {
-	getHeightMapFromFile( file_name );
+	setHeightMapFromFile( file_name );
 	buildMesh();
 	buildIndices();
 	
+	setup();
+}
+
+Terrain::Terrain( int size, bool random_generate )
+{
+	setHeightMapRandom(size);
+	buildMesh();
+	buildIndices();
+
 	setup();
 }
 
@@ -20,7 +30,7 @@ Terrain::~Terrain()
 	glDeleteBuffers( 1, &EBO );
 }
 
-void Terrain::getHeightMapFromFile( std::string file_name )
+void Terrain::setHeightMapFromFile( std::string file_name )
 {
 	std::ifstream file( file_name );
 	if( !file.is_open() )
@@ -44,6 +54,41 @@ void Terrain::getHeightMapFromFile( std::string file_name )
 	file.close();
 }
 
+void Terrain::setHeightMapRandom( int size )
+{
+	height_map.reserve( size );
+
+	step = (int)sqrt( size );
+	float start = (float)((size / 2) + step / 2);
+
+	PerlinNoise noise;
+
+	//generate values from perlin noise
+	for( int i = 0; i < step; i++ )
+	{
+		for( int j = 0; j < step; j++ )
+		{
+			height_map.push_back( noise.getOctavePerlin( (float)j, (float)i, 0, 4, 0.03125f ) );
+		}
+	}
+
+	//map values 
+	float output_end = 1700.f;
+	float output_start = 300.f;
+
+	const auto pair = std::minmax_element( height_map.begin(), height_map.end() );
+	float input_end = *(pair.second);
+	float input_start = *(pair.first);
+
+	float slope = (output_end - output_start) / (input_end-input_start);
+
+	for( auto& v : height_map )
+	{
+		v = output_start + floor( slope * (v - input_start) + 0.5f );
+	}
+
+}
+
 void Terrain::buildMesh()
 {
 	/*
@@ -52,16 +97,19 @@ void Terrain::buildMesh()
 	|
 	x->*/
 
-	step = (int)sqrt( height_map.size() );
-	int start = -1 * (height_map.size() / 2) + step / 2;//even points on either sides of axis 
-
 	vertices.reserve( 2 * height_map.size() );
+	
+	step = (int)sqrt( height_map.size() );
+	int start = (height_map.size() / 2) + step / 2;//even points on either sides of axis 
+	float zi = (float)-start;
+	unsigned int ij = 0;
 
-	for( int i = 0, zi = start, z = 0; i < step; i++, zi += step )
+	for( int i = 0; i < step; i++, zi += step )
 	{
-		for( int j = 0, xi = -start; j < step; j++, xi -= step, z++ )
+		float xi = (float)start;
+		for( int j = 0; j < step; j++, xi -= step )
 		{
-			vertices.emplace_back( glm::vec3(xi, height_map[ z ], zi), calculateNormal( j, i ) );
+			vertices.emplace_back( glm::vec3(xi, height_map[ ij++ ], zi), calculateNormal( j, i ) );
 		}
 	}
 }

@@ -1,10 +1,4 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include <fstream>
-#include <iostream>
-#include <vector>
+﻿#include <iostream>
 
 #include "glew.h"
 #include "freeglut.h"
@@ -48,15 +42,16 @@ void Draw()
 
 	//Set model,view,projection
 	float height_max = terrain->getMaxHeight();
+	float height_min = terrain->getMinHeight();
 
 	glm::mat4 MV = glm::mat4( 1.0f );
 	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 4. / terrain->getSizeVertices(), 1 / (5 * height_max - terrain->getMinHeight()) * scale, 4. / terrain->getSizeVertices() ) );
+	MV = glm::scale( MV, glm::vec3( 4. / terrain->getSizeVertices(), scale / (3*height_max - height_min), 4. / terrain->getSizeVertices() ) );
 	glm::mat4 MVP = P * MV;
 
-	glm::vec3 object_color( 0.23f, 0.31f, 0);
+	glm::vec3 object_color( 0.20f, 0.40f, 0);
 	glm::vec3 light_color( 1, 1, 1);
 	glm::vec3 light_pos( terrain->getSizeVertices() * light_position.x, 10 * height_max * scale * light_position.y, terrain->getSizeVertices() * light_position.z);
 	glm::vec3 view_pos( 0, 10000, 500000 );
@@ -253,6 +248,7 @@ int main( int argc, char** argv )
 	shader_tex = new Shader( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
 	texture = new Texture( "resources/tatry3.bmp" );
 
+	//terrain = new Terrain( 40000 );
 	terrain = new Terrain( "resources/tatry.txt" );
 
 	glutMainLoop();

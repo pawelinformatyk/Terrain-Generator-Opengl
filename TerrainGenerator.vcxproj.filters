@@ -4,16 +4,14 @@
     <ClCompile Include="src\main.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="src\shadersLoader.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tekstura.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="src\terrain.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="Dependencies\include\glm\detail\glm.cpp" />
+    <ClCompile Include="src\texture.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL\glew.h">
@@ -27,12 +25,6 @@
     <ClInclude Include="Dependencies\include\glxew.h" />
     <ClInclude Include="Dependencies\include\wglew.h" />
     <ClInclude Include="src\terrain.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\shaderLoader.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\tekstura.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="Dependencies\include\glm\detail\_features.hpp" />
@@ -182,6 +174,10 @@
     <ClInclude Include="Dependencies\include\glm\vec3.hpp" />
     <ClInclude Include="Dependencies\include\glm\vec4.hpp" />
     <ClInclude Include="Dependencies\include\glm\vector_relational.hpp" />
+    <ClInclude Include="src\texture.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shader.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

@@ -4,37 +4,6 @@
 
 #include "terrain.h"
 
-std::vector<GLuint> BuildIndicesForTriangles( GLuint size )
-{
-	/*
-		^
-		|
-	v3 ->v4
-	^ \	 ^
-	|  \ |	    ->>>>>>>
-	v1 -> v2
-
-	v1,v2,v3,v3,v2,v4 ->>
-	*/
-
-	std::vector<GLuint> ind;
-	GLuint step = (GLuint)sqrt( size );
-
-	for( GLuint i = 0; i < step - 1; i++ )
-		for( GLuint j = 0; j < step - 1; j++ )
-		{
-			ind.push_back( j + i * step );
-			ind.push_back( j + i * step + 1 );
-			ind.push_back( j + (i + 1) * step );
-			ind.push_back( j + (i + 1) * step );
-			ind.push_back( j + i * step + 1 );
-			ind.push_back( j + (i + 1) * step + 1 );
-		}
-
-	return ind;
-}
-
-
 Terrain::Terrain( std::string file_name )
 {
 	getHeightMapFromFile( file_name );

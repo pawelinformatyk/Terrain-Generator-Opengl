@@ -79,8 +79,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\shadersLoader.cpp" />
-    <ClCompile Include="src\tekstura.cpp" />
+    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\terrain.cpp" />
     <ClCompile Include="Dependencies\include\glm\detail\glm.cpp" />
   </ItemGroup>
@@ -93,8 +93,8 @@
     <ClInclude Include="Dependencies\include\glxew.h" />
     <ClInclude Include="Dependencies\include\wglew.h" />
     <ClInclude Include="GL\glew.h" />
-    <ClInclude Include="src\shaderLoader.h" />
-    <ClInclude Include="src\tekstura.h" />
+    <ClInclude Include="src\shader.h" />
+    <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\terrain.h" />
     <ClInclude Include="Dependencies\include\glm\common.hpp" />
     <ClInclude Include="Dependencies\include\glm\detail\func_common.hpp" />

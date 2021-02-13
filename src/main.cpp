@@ -8,16 +8,12 @@
 
 #include "glew.h"
 #include "freeglut.h"
-#include "glm/vec3.hpp" 
-#include "glm/vec4.hpp" 
-#include "glm/mat4x4.hpp" 
+#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp" 
 
-#include "shaderLoader.h" 
-#include "tekstura.h"
+#include "shader.h" 
+#include "texture.h"
 #include "terrain.h"
-
-
 
 //control variables 
 int screen_width = 1920/2;
@@ -36,9 +32,10 @@ GLfloat ad;//variable to control animation
 
 Terrain* terrain;
 Model display_model;
-
-GLuint shader_default, shader_light, shader_height, shader_texture;//shader program
-GLuint texture_id;
+Shader* shader_def;
+Shader* shader_heig;
+Shader* shader_tex;
+Texture* texture;
 
 void Draw()
 {
@@ -46,6 +43,8 @@ void Draw()
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	terrain->setPolygonMode( GL_FILL );
+	
+	Shader* shader;
 
 	//Set model,view,projection
 	float height_max = terrain->getMaxHeight();
@@ -62,34 +61,28 @@ void Draw()
 	glm::vec3 light_pos( terrain->getSizeVertices() * light_position.x, 10 * height_max * scale * light_position.y, terrain->getSizeVertices() * light_position.z);
 	glm::vec3 view_pos( 0, 10000, 500000 );
 
-	GLuint shader;
-
 	//set variables/uniforms for choosen display model 
 	switch( display_model )
 	{
-		default:
-			shader = shader_default;
-			break;
-
 		case model_height:
-			shader = shader_height;
-			glUniform1f(  glGetUniformLocation( shader_height, "maximum" ), height_max );
+			shader = shader_heig;
+			shader->setFloat( "maximum", height_max );
 			break;
 
 		case model_texture:
-			shader = shader_texture;
+			shader = shader_tex;
 
 			object_color = glm::vec3( 0.5f, 0.5f, 0.5f );
 			glActiveTexture( GL_TEXTURE0 );
-			glBindTexture( GL_TEXTURE_2D, texture_id );
+			glBindTexture( GL_TEXTURE_2D, texture->getID() );
 			
-			glUniform1i( glGetUniformLocation( shader, "terrain_size" ), terrain->getSizeVertices() );
-			glUniform1i( glGetUniformLocation( shader, "terrain_step" ), terrain->getStep());
-			glUniform1i( glGetUniformLocation( shader, "tex" ), 0 );
+			shader->setInt( "terrain_size", terrain->getSizeVertices() );
+			shader->setInt( "terrain_step", terrain->getStep() );
+			shader->setInt( "tex", 0 );
 			break;
 
 		case model_points:
-			shader = shader_default;
+			shader = shader_def;
 
 			terrain->setPolygonMode( GL_POINT );
 			glPointSize( 2.5f );
@@ -98,15 +91,19 @@ void Draw()
 			light_pos = glm::vec3( 0, 0, 0 );
 			view_pos = glm::vec3( 0, 0, 0 );
 			break;
+
+		default:
+			shader = shader_def;
+			break;
 	}
 	
-	glUseProgram( shader );
+	shader->use();
 
-	glUniformMatrix4fv( glGetUniformLocation( shader, "MVP" ), 1, GL_FALSE, &(MVP[ 0 ][ 0 ]) );
-	glUniform3f( glGetUniformLocation( shader, "objectColor" ), object_color.x, object_color.y, object_color.z);
-	glUniform3f( glGetUniformLocation( shader, "lightColor" ), light_color.x,light_color.y, light_color.z);
-	glUniform3f( glGetUniformLocation( shader, "lightPos" ), light_pos.x, light_pos.y, light_pos.z );
-	glUniform3f( glGetUniformLocation( shader, "viewPos" ), view_pos.x, view_pos.y, view_pos.z );
+	shader->setMat4( "MVP", MVP );
+	shader->setVec3( "objectColor", object_color );
+	shader->setVec3( "lightColor", light_color );
+	shader->setVec3( "lightPos", light_pos );
+	shader->setVec3( "viewPos", view_pos );
 
 	terrain->draw();
 
@@ -205,7 +202,6 @@ void ScreenSize( int width, int height )
 }
 void idle()
 {
-
 	glutPostRedisplay();
 }
 void timer( int t )
@@ -252,25 +248,20 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
+	shader_def = new Shader( "src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl" );
+	shader_heig = new Shader( "src/shaders/height_vshader.glsl", "src/shaders/height_fshader.glsl" );
+	shader_tex = new Shader( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
+	texture = new Texture( "resources/tatry3.bmp" );
 
 	terrain = new Terrain( "resources/tatry.txt" );
-
-	shader_default = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl" );
-	shader_light = loadShaders( "src/shaders/light_vshader.glsl", "src/shaders/light_fshader.glsl" );
-	shader_height = loadShaders( "src/shaders/height_vshader.glsl", "src/shaders/height_fshader.glsl" );
-	shader_texture = loadShaders( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
-
-	texture_id = WczytajTeksture( "resources/tatry3.bmp" );
-	if( texture_id == -1 )
-	{
-		MessageBox( NULL, "Texture file not found", "Problem", MB_OK | MB_ICONERROR );
-		exit( 0 );
-	}
-
 
 	glutMainLoop();
 
 	delete terrain;
+	delete shader_def;
+	delete shader_heig;
+	delete shader_tex;
+	delete texture;
 
 	return 0;
 }

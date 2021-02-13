@@ -239,9 +239,14 @@ glm::vec3 Terrain::calculateNormal( int x, int z )
 void Terrain::draw()
 {
 	glBindVertexArray( VAO );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
 	glDrawElements( GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0 );
 	glBindVertexArray( 0 );
+}
+
+void Terrain::setPolygonMode( GLenum mode )
+{
+	this->polygon_mode=mode;
 }
 
 float Terrain::getMaxHeight()

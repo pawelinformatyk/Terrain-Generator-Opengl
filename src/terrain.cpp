@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <random>
 
 #include "terrain.h"
 #include "noise.h"
@@ -14,7 +15,7 @@ Terrain::Terrain( std::string file_name )
 	setup();
 }
 
-Terrain::Terrain( int size, bool random_generate )
+Terrain::Terrain( int size )
 {
 	setHeightMapRandom(size);
 	buildMesh();
@@ -61,14 +62,20 @@ void Terrain::setHeightMapRandom( int size )
 	step = (int)sqrt( size );
 	float start = (float)((size / 2) + step / 2);
 
-	PerlinNoise noise;
+
+	std::random_device rd; // obtain a random number from hardware
+	std::mt19937 gen( rd() ); // seed the generator
+	std::uniform_real_distribution<> distr( 0.2, 0.3 ); // define the range,i like this range
+
+	float seed = (float)distr( gen );
+	printf( "%f\n", seed );
 
 	//generate values from perlin noise
 	for( int i = 0; i < step; i++ )
 	{
 		for( int j = 0; j < step; j++ )
 		{
-			height_map.push_back( noise.getOctavePerlin( (float)j, (float)i, 0, 4, 0.03125f ) );
+			height_map.push_back( abs(PerlinNoise::getOctavePerlin( j* seed, i* seed, 0, 4, 0.0625f ) ));
 		}
 	}
 

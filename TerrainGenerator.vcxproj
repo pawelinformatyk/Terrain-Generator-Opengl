@@ -78,7 +78,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\noise.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\texture.cpp" />
@@ -249,13 +248,13 @@
   <ItemGroup>
     <None Include="Dependencies\lib\freeglut.dll" />
     <None Include="Dependencies\lib\glew32.dll" />
-    <None Include="src\shaders\fragment_shader.glsl" />
-    <None Include="src\shaders\height_fshader.glsl" />
-    <None Include="src\shaders\height_vshader.glsl" />
-    <None Include="src\shaders\light_fshader.glsl" />
-    <None Include="src\shaders\light_vshader.glsl" />
-    <None Include="src\shaders\texture_fshader.glsl" />
-    <None Include="src\shaders\vertex_shader.glsl" />
+    <None Include="resources\shaders\fragment_shader.glsl" />
+    <None Include="resources\shaders\height_fshader.glsl" />
+    <None Include="resources\shaders\height_vshader.glsl" />
+    <None Include="resources\shaders\light_fshader.glsl" />
+    <None Include="resources\shaders\light_vshader.glsl" />
+    <None Include="resources\shaders\texture_fshader.glsl" />
+    <None Include="resources\shaders\vertex_shader.glsl" />
     <None Include="Dependencies\include\glm\detail\func_common.inl" />
     <None Include="Dependencies\include\glm\detail\func_common_simd.inl" />
     <None Include="Dependencies\include\glm\detail\func_exponential.inl" />

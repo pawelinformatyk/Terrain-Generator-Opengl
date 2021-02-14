@@ -12,7 +12,6 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="src\shader.cpp" />
-    <ClCompile Include="src\noise.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL\glew.h">
@@ -195,27 +194,6 @@
   <ItemGroup>
     <None Include="Dependencies\lib\freeglut.dll" />
     <None Include="Dependencies\lib\glew32.dll" />
-    <None Include="src\shaders\light_vshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\height_fshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\height_vshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\light_fshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\fragment_shader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\texture_fshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\vertex_shader.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="Dependencies\include\glm\detail\func_common.inl" />
     <None Include="Dependencies\include\glm\detail\func_common_simd.inl" />
     <None Include="Dependencies\include\glm\detail\func_exponential.inl" />
@@ -330,6 +308,27 @@
     <None Include="Dependencies\include\glm\gtx\vector_angle.inl" />
     <None Include="Dependencies\include\glm\gtx\vector_query.inl" />
     <None Include="Dependencies\include\glm\gtx\wrap.inl" />
+    <None Include="resources\shaders\fragment_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\height_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\height_vshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\light_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\light_vshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\texture_fshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\vertex_shader.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependencies\lib\freeglut.lib" />

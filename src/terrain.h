@@ -42,8 +42,9 @@ private:
 	glm::vec3 calculateNormal( int x, int z );
 
 public:
-	Terrain( std::string file_name );
-	Terrain( int size, bool random_generate = false );
+	Terrain( std::string file_name );//terrain from file 
+	Terrain( int size );//random terrain 
+	Terrain( std::string texture,int size );//random terrain 
 	~Terrain();
 
 	void draw();

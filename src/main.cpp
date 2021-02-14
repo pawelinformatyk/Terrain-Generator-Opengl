@@ -10,8 +10,8 @@
 #include "terrain.h"
 
 //control variables 
-int screen_width = 1920/2;
-int screen_height = 1080/2;
+int screen_width = 1920/1.5;
+int screen_height = 1080/1.5;
 
 int mouse_positionX;
 int mouse_positionY;
@@ -243,13 +243,13 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
-	shader_def = new Shader( "src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl" );
-	shader_heig = new Shader( "src/shaders/height_vshader.glsl", "src/shaders/height_fshader.glsl" );
-	shader_tex = new Shader( "src/shaders/vertex_shader.glsl", "src/shaders/texture_fshader.glsl" );
+	shader_def = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl" );
+	shader_heig = new Shader( "resources/shaders/height_vshader.glsl", "resources/shaders/height_fshader.glsl" );
+	shader_tex = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/texture_fshader.glsl" );
 	texture = new Texture( "resources/tatry3.bmp" );
 
-	//terrain = new Terrain( 40000 );
-	terrain = new Terrain( "resources/tatry.txt" );
+	terrain = new Terrain( 40000 );
+	//terrain = new Terrain( "resources/tatry.txt" );
 
 	glutMainLoop();
 

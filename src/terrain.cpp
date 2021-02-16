@@ -8,7 +8,7 @@
 
 Terrain::Terrain( std::string file_name )
 {
-	setHeightMapFromFile( file_name );
+	buildHeightMapFromFile( file_name );
 	buildMesh();
 	buildIndices();
 	
@@ -17,7 +17,7 @@ Terrain::Terrain( std::string file_name )
 
 Terrain::Terrain( int size )
 {
-	setHeightMapRandom(size);
+	buildHeightMapRandom(size);
 	buildMesh();
 	buildIndices();
 
@@ -31,7 +31,7 @@ Terrain::~Terrain()
 	glDeleteBuffers( 1, &EBO );
 }
 
-void Terrain::setHeightMapFromFile( std::string file_name )
+void Terrain::buildHeightMapFromFile( std::string file_name )
 {
 	std::ifstream file( file_name );
 	if( !file.is_open() )
@@ -53,29 +53,34 @@ void Terrain::setHeightMapFromFile( std::string file_name )
 	}
 
 	file.close();
+
+	auto input = std::minmax_element( height_map.begin(), height_map.end() );
+
+	height_max = *input.second;
+	height_min = *input.first;
 }
 
-void Terrain::setHeightMapRandom( int size )
+void Terrain::buildHeightMapRandom( int size )
 {
 	height_map.reserve( size );
-
-	step = (int)sqrt( size );
-	float start = (float)((size / 2) + step / 2);
 
 
 	std::random_device rd; // obtain a random number from hardware
 	std::mt19937 gen( rd() ); // seed the generator
-	std::uniform_real_distribution<> distr( 0.2, 0.3 ); // define the range,i like this range
+	std::uniform_real_distribution<> distr( 0.01, 0.03 ); // define the range,i like this range
 
-	float seed = (float)distr( gen );
-	printf( "%f\n", seed );
+	float seed = float( distr( gen ) );
 
-	//generate values from perlin noise
-	for( int i = 0; i < step; i++ )
+	step = (int)sqrt( size );
+	float start = -1000.f + 1000.f / step;
+	float z = start;
+
+	for( int i = 0; i < step; i++, z += 2000.f / step )
 	{
-		for( int j = 0; j < step; j++ )
+		float x = start;
+		for( int j = 0; j < step; j++, x += 2000.f / step )
 		{
-			height_map.push_back( abs(PerlinNoise::getOctavePerlin( j* seed, i* seed, 0, 4, 0.0625f ) ));
+			height_map.push_back( (PerlinNoise::getOctavePerlin( x * seed, z * seed, 0, 4, 0.1f, 1, 0.25f )) );
 		}
 	}
 
@@ -83,23 +88,23 @@ void Terrain::setHeightMapRandom( int size )
 	float output_end = 1700.f;
 	float output_start = 300.f;
 
-	const auto pair = std::minmax_element( height_map.begin(), height_map.end() );
-	float input_end = *(pair.second);
-	float input_start = *(pair.first);
-
-	float slope = (output_end - output_start) / (input_end-input_start);
+	float slope = (output_end - output_start)/2;
 
 	for( auto& v : height_map )
 	{
-		v = output_start + floor( slope * (v - input_start) + 0.5f );
+		v = output_start + floor( slope * (v)+0.5f );
 	}
 
+	auto input = std::minmax_element( height_map.begin(), height_map.end() );
+
+	height_max = *input.second;
+	height_min = *input.first;
 }
 
 void Terrain::buildMesh()
 {
 	/*
-	Building grid from x+ to x-. z- to z+
+	Building grid from x- to x+. z- to z+
 	^
 	|
 	x->*/
@@ -107,14 +112,14 @@ void Terrain::buildMesh()
 	vertices.reserve( 2 * height_map.size() );
 	
 	step = (int)sqrt( height_map.size() );
-	int start = (height_map.size() / 2) + step / 2;//even points on either sides of axis 
-	float zi = (float)-start;
+	int start = -1*(height_map.size() / 2) + step / 2;//even points on either sides of axis 
+	float zi = float(start);
 	unsigned int ij = 0;
 
 	for( int i = 0; i < step; i++, zi += step )
 	{
-		float xi = (float)start;
-		for( int j = 0; j < step; j++, xi -= step )
+		float xi = float(start);
+		for( int j = 0; j < step; j++, xi += step )
 		{
 			vertices.emplace_back( glm::vec3(xi, height_map[ ij++ ], zi), calculateNormal( j, i ) );
 		}
@@ -257,7 +262,7 @@ glm::vec3 Terrain::calculateNormal( int x, int z )
 	}
 
 	//this is basically sum of normals of adjecent triangles 
-	return  glm::vec3( -(hl - hr) / step, 2.0f, -(hd - hu) / step );
+	return  glm::vec3( (hl - hr) / step, 2.0f, -(hd - hu) / step );
 }
 
 void Terrain::draw()
@@ -275,26 +280,12 @@ void Terrain::setPolygonMode( GLenum mode )
 
 float Terrain::getMaxHeight()
 {
-	float max = vertices.front().pos.y;
-
-	for( size_t i = 0; i < vertices.size(); i++ )
-	{
-		if( vertices[i].pos.y > max ) max = vertices[ i ].pos.y;
-	}
-
-	return max;
+	return height_max;
 }
 
 float Terrain::getMinHeight()
 {
-	float min = vertices.front().pos.y;
-
-	for( size_t i = 0; i < vertices.size(); i++ )
-	{
-		if( vertices[ i ].pos.y < min ) min = vertices[ i ].pos.y;
-	}
-
-	return min;
+	return height_min;
 }
 
 int Terrain::getSizeIndices()

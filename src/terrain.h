@@ -6,11 +6,6 @@
 #include "freeglut.h"
 #include "glm/glm.hpp" 
 
-enum Model 
-{
-	model_base, model_texture, model_height, model_points, model_wireframe
-};
-
 struct Vertex
 {
 	glm::vec3 pos;
@@ -29,22 +24,22 @@ private:
 	unsigned int VAO, VBO, EBO;
 
 	GLenum polygon_mode=GL_FILL;
-	float max_height;
-	float min_height;
+	float height_max;
+	float height_min;
 	int step;
 
 	void buildIndices();
 	void buildMesh();
 	void setup();
-	void setHeightMapFromFile(std::string file_name);
-	void setHeightMapRandom(int size);
+	void buildHeightMapFromFile(std::string file_name);
+	void buildHeightMapRandom(int size);
 
 	glm::vec3 calculateNormal( int x, int z );
 
 public:
 	Terrain( std::string file_name );//terrain from file 
 	Terrain( int size );//random terrain 
-	Terrain( std::string texture,int size );//random terrain 
+	Terrain( std::string texture,int size );
 	~Terrain();
 
 	void draw();

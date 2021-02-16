@@ -76,7 +76,7 @@ public:
 						   lerp( u, grad( permutation[ AB + 1 ], x, y - 1, z - 1 ),
 								 grad( permutation[ BB + 1 ], x - 1, y - 1, z - 1 ) ) ) );
 	}
-	static float getOctavePerlin( float x, float y, float z, int octaves, float freq = 1,float amp=1, float persistence = 0.5f )
+	static float getOctavePerlin( float x, float y, float z, int octaves, float freq = 1, float amp = 1, float persistence = 0.5f )
 	{
 		float total = 0;
 		float frequency = freq;
@@ -89,7 +89,7 @@ public:
 			maxValue += amplitude;
 
 			amplitude *= persistence;
-			frequency *= 2;
+			frequency /= persistence;
 		}
 
 		return total / maxValue;

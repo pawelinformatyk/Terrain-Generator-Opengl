@@ -9,9 +9,10 @@
 #include "texture.h"
 #include "terrain.h"
 
+
 //control variables 
-int screen_width = 1920/1.5;
-int screen_height = 1080/1.5;
+int screen_width = 1920;
+int screen_height = 1080;
 
 int mouse_positionX;
 int mouse_positionY;
@@ -19,17 +20,23 @@ int mbutton;
 double cameraX, cameraZ, cameraD, previous_cameraX, previous_cameraZ, previous_cameraD;
 
 glm::mat4 P;
-glm::vec3 light_position(1);
+glm::vec3 light_position(1,5,1);
 float scale = 1.f;
 float rotation=30;
 GLfloat ad;//variable to control animation
 
-Terrain* terrain;
+enum class Model
+{
+	model_base, model_texture, model_height, model_points, model_wireframe
+};
 Model display_model;
+
+Terrain* terrain;
 Shader* shader_def;
 Shader* shader_heig;
 Shader* shader_tex;
 Texture* texture;
+
 
 void Draw()
 {
@@ -41,30 +48,30 @@ void Draw()
 	Shader* shader;
 
 	//Set model,view,projection
-	float height_max = terrain->getMaxHeight();
-	float height_min = terrain->getMinHeight();
 
 	glm::mat4 MV = glm::mat4( 1.0f );
-	MV = glm::translate( MV, glm::vec3( 0, -.5f, cameraD - 4 ) );
+	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
-	MV = glm::scale( MV, glm::vec3( 4. / terrain->getSizeVertices(), scale / (3*height_max - height_min), 4. / terrain->getSizeVertices() ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraX +180+ rotation ), glm::vec3( 0, 1, 0 ) );
+	float xz_scale = 4.f / terrain->getSizeVertices();
+	MV = glm::scale( MV, glm::vec3( xz_scale, scale / ( 3*terrain->getMaxHeight() - terrain->getMinHeight() ), xz_scale ) );
+
 	glm::mat4 MVP = P * MV;
 
 	glm::vec3 object_color( 0.20f, 0.40f, 0);
 	glm::vec3 light_color( 1, 1, 1);
-	glm::vec3 light_pos( terrain->getSizeVertices() * light_position.x, 10 * height_max * scale * light_position.y, terrain->getSizeVertices() * light_position.z);
-	glm::vec3 view_pos( 0, 10000, 500000 );
+	glm::vec3 light_pos( terrain->getSizeVertices() * light_position.x, terrain->getSizeVertices()/10.f * light_position.y, terrain->getSizeVertices() * light_position.z );
+	glm::vec3 view_pos( 0, 0, 0 );
 
 	//set variables/uniforms for choosen display model 
 	switch( display_model )
 	{
-		case model_height:
+		case Model::model_height:
 			shader = shader_heig;
-			shader->setFloat( "maximum", height_max );
+			shader->setFloat( "maximum", terrain->getMaxHeight() );
 			break;
 
-		case model_texture:
+		case Model::model_texture:
 			shader = shader_tex;
 
 			object_color = glm::vec3( 0.5f, 0.5f, 0.5f );
@@ -76,7 +83,7 @@ void Draw()
 			shader->setInt( "tex", 0 );
 			break;
 
-		case model_points:
+		case Model::model_points:
 			shader = shader_def;
 
 			terrain->setPolygonMode( GL_POINT );
@@ -126,57 +133,58 @@ void MouseMovement( int x, int y )
 {
 	if( mbutton == GLUT_LEFT_BUTTON )
 	{
-		cameraX = previous_cameraX - (mouse_positionX - x) * 0.1;
-		cameraZ = previous_cameraZ - (mouse_positionY - y) * 0.1;
+		cameraX = previous_cameraX - ((double)mouse_positionX - x) * 0.1;
+		cameraZ = previous_cameraZ - ((double)mouse_positionY - y) * 0.1;
 	}
 	if( mbutton == GLUT_RIGHT_BUTTON )
 	{
-		cameraD = previous_cameraD + (mouse_positionY - y) * 0.1;
+		cameraD = previous_cameraD + ((double)mouse_positionY - y) * 0.1;
 	}
 
 }
 void Keys( GLubyte key, int x, int y )
 {
+	float step = 0.1f;
 	switch( key )
 	{
 		case 27:    /* Esc - end */
 			exit( 1 );
 			break;
 		case 'w':
-			light_position.z +=0.01f * scale;
+			light_position.z += step;
 			break;
 		case 's':
-			light_position.z -= 0.01f * scale;
+			light_position.z -= step;
 			break;
 		case 'a':
-			light_position.x += 0.01f * scale;
+			light_position.x += step;
 			break;
 		case 'd':
-			light_position.x -= 0.01f * scale;
+			light_position.x -= step;
 			break;
 		case 'q':
-			light_position.y += 0.05f * scale;
+			light_position.y += step*5;
 			break;
 		case 'e':
-			light_position.y -= 0.05f*scale;
+			light_position.y -= step*5;
 			break;
 		case '1':
-			display_model = model_base;
+			display_model = Model::model_base;
 			break;
 		case '2':
-			display_model = model_texture;
+			display_model = Model::model_texture;
 			break;
 		case '3':
-			display_model =model_height;
+			display_model = Model::model_height;
 			break;
 		case '4':
-			display_model = model_points;
+			display_model = Model::model_points;
 			break;
 		case '[':
-			scale -= 0.1f;
+			scale -= step;
 			break;
 		case ']':
-			scale += 0.1f;
+			scale += step;
 			break;
 		case ' ':
 			ad = (ad == 0.3f) ? 0 : 0.3f;
@@ -203,7 +211,7 @@ void timer( int t )
 {
 	if( rotation >= 360 )
 		rotation = 0;
-
+	
 	rotation += ad;
 
 	glutTimerFunc( 10, timer, 0 );
@@ -248,9 +256,10 @@ int main( int argc, char** argv )
 	shader_tex = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/texture_fshader.glsl" );
 	texture = new Texture( "resources/tatry3.bmp" );
 
-	terrain = new Terrain( 40000 );
-	//terrain = new Terrain( "resources/tatry.txt" );
+	//terrain = new Terrain( 160000 );
+	terrain = new Terrain( "resources/tatry.txt" );
 
+	
 	glutMainLoop();
 
 	delete terrain;

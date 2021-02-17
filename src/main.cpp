@@ -11,8 +11,8 @@
 
 
 //control variables 
-int screen_width = 1920;
-int screen_height = 1080;
+int screen_width = 1920/2;
+int screen_height = 1080/2;
 
 int mouse_positionX;
 int mouse_positionY;
@@ -20,9 +20,9 @@ int mbutton;
 double cameraX, cameraZ, cameraD, previous_cameraX, previous_cameraZ, previous_cameraD;
 
 glm::mat4 P;
-glm::vec3 light_position(1,5,1);
+glm::vec3 light_position(-2,-2,-2);
 float scale = 1.f;
-float rotation=30;
+float rotation=0;
 GLfloat ad;//variable to control animation
 
 enum class Model
@@ -35,8 +35,10 @@ Terrain* terrain;
 Shader* shader_def;
 Shader* shader_heig;
 Shader* shader_tex;
-Texture* texture;
+Texture* diffuse_map;
+Texture* specular_map;
 
+#define RAND1
 
 void Draw()
 {
@@ -44,28 +46,43 @@ void Draw()
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	terrain->setPolygonMode( GL_FILL );
-	
+
 	Shader* shader;
 
 	//Set model,view,projection
-
 	glm::mat4 MV = glm::mat4( 1.0f );
 	MV = glm::translate( MV, glm::vec3( 0, 0, cameraD - 4 ) );
 	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	MV = glm::rotate( MV, (float)glm::radians( cameraX +180+ rotation ), glm::vec3( 0, 1, 0 ) );
-	float xz_scale = 4.f / terrain->getSizeVertices();
-	MV = glm::scale( MV, glm::vec3( xz_scale, scale / ( 3*terrain->getMaxHeight() - terrain->getMinHeight() ), xz_scale ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
 
+	float scale_xz = 4.f / terrain->getSizeVertices();
+	float scale_y = scale / (3 * terrain->getMaxHeight() - terrain->getMinHeight());
+	MV = glm::scale( MV, glm::vec3( scale_xz, scale_y, scale_xz ) );
+	
 	glm::mat4 MVP = P * MV;
 
-	glm::vec3 object_color( 0.20f, 0.40f, 0);
-	glm::vec3 light_color( 1, 1, 1);
-	glm::vec3 light_pos( terrain->getSizeVertices() * light_position.x, terrain->getSizeVertices()/10.f * light_position.y, terrain->getSizeVertices() * light_position.z );
-	glm::vec3 view_pos( 0, 0, 0 );
+	//position of camera in worldspace
+	float xn = -float( (terrain->getSizeVertices() / 2 + 1 / scale_xz) * glm::sin( glm::radians( cameraX + 180 + rotation ) ) );
+	float zn = float( (terrain->getSizeVertices() / 2 + 1 / scale_xz) * glm::cos( glm::radians( cameraX + 180 + rotation ) ) );
+	float yn = float( -glm::tan( glm::radians( cameraZ + 25 ) ) * zn );
+	glm::vec3 view_pos( xn, yn, zn );
 
 	//set variables/uniforms for choosen display model 
 	switch( display_model )
 	{
+		case Model::model_base:
+			shader = shader_def;
+
+			shader->setVec3( "viewPos", view_pos );
+			shader->setVec3( "material.diffuse", .0f, 0.5f, .0f );
+			shader->setVec3( "material.specular", glm::vec3( 0.05f ) );
+			shader->setFloat( "material.shininess", 2 );
+			shader->setVec3( "light.ambient", glm::vec3( 0.1f ) );
+			shader->setVec3( "light.diffuse", glm::vec3( 0.5f ) );
+			shader->setVec3( "light.specular", glm::vec3( 1.f ));
+			shader->setVec3( "light.direction", light_position );
+			break;
+
 		case Model::model_height:
 			shader = shader_heig;
 			shader->setFloat( "maximum", terrain->getMaxHeight() );
@@ -74,13 +91,21 @@ void Draw()
 		case Model::model_texture:
 			shader = shader_tex;
 
-			object_color = glm::vec3( 0.5f, 0.5f, 0.5f );
 			glActiveTexture( GL_TEXTURE0 );
-			glBindTexture( GL_TEXTURE_2D, texture->getID() );
-			
+			glBindTexture( GL_TEXTURE_2D, diffuse_map->getID() );
+			glActiveTexture( GL_TEXTURE1 );
+			glBindTexture( GL_TEXTURE_2D, specular_map->getID() );
+
 			shader->setInt( "terrain_size", terrain->getSizeVertices() );
 			shader->setInt( "terrain_step", terrain->getStep() );
-			shader->setInt( "tex", 0 );
+			shader->setVec3( "viewPos", view_pos );
+			shader->setInt( "material.diffuse", 0 );
+			shader->setInt( "material.specular", 1 );
+			shader->setFloat( "material.shininess", 2 );
+			shader->setVec3( "light.ambient", glm::vec3( 0.1f ) );
+			shader->setVec3( "light.diffuse", glm::vec3( 0.5f ) );
+			shader->setVec3( "light.specular", glm::vec3( 1.f ) );
+			shader->setVec3( "light.direction", light_position );
 			break;
 
 		case Model::model_points:
@@ -89,26 +114,21 @@ void Draw()
 			terrain->setPolygonMode( GL_POINT );
 			glPointSize( 2.5f );
 
-			light_color = glm::vec3( 0, 0, 0 );
-			light_pos = glm::vec3( 0, 0, 0 );
-			view_pos = glm::vec3( 0, 0, 0 );
+			shader->setVec3( "light.ambient", 0, 0, 0 );
+			shader->setVec3( "light.diffuse", 0, 0, 0 );
+			shader->setVec3( "light.specular", 0, 0, 0 );
 			break;
 
 		default:
 			shader = shader_def;
-			break;
 	}
-	
+
 	shader->use();
 
 	shader->setMat4( "MVP", MVP );
-	shader->setVec3( "objectColor", object_color );
-	shader->setVec3( "lightColor", light_color );
-	shader->setVec3( "lightPos", light_pos );
-	shader->setVec3( "viewPos", view_pos );
 
 	terrain->draw();
-
+	
 	glFlush();
 	glutSwapBuffers();
 }
@@ -151,22 +171,22 @@ void Keys( GLubyte key, int x, int y )
 			exit( 1 );
 			break;
 		case 'w':
-			light_position.z += step;
-			break;
-		case 's':
 			light_position.z -= step;
 			break;
-		case 'a':
-			light_position.x += step;
+		case 's':
+			light_position.z += step;
 			break;
-		case 'd':
+		case 'a':
 			light_position.x -= step;
 			break;
-		case 'q':
-			light_position.y += step*5;
+		case 'd':
+			light_position.x += step;
 			break;
-		case 'e':
-			light_position.y -= step*5;
+		case 'r':
+			light_position.y -= step;
+			break;
+		case 'f':
+			light_position.y += step;
 			break;
 		case '1':
 			display_model = Model::model_base;
@@ -254,10 +274,14 @@ int main( int argc, char** argv )
 	shader_def = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl" );
 	shader_heig = new Shader( "resources/shaders/height_vshader.glsl", "resources/shaders/height_fshader.glsl" );
 	shader_tex = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/texture_fshader.glsl" );
-	texture = new Texture( "resources/tatry3.bmp" );
+	diffuse_map = new Texture( "resources/tatry3.bmp" );
+	specular_map = new Texture( "resources/tatry3gray.bmp" );
 
-	//terrain = new Terrain( 160000 );
+#ifdef RAND
+	terrain = new Terrain( 160000 );
+#else
 	terrain = new Terrain( "resources/tatry.txt" );
+#endif
 
 	
 	glutMainLoop();
@@ -266,7 +290,8 @@ int main( int argc, char** argv )
 	delete shader_def;
 	delete shader_heig;
 	delete shader_tex;
-	delete texture;
+	delete diffuse_map;
+	delete specular_map;
 
 	return 0;
 }

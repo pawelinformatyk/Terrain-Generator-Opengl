@@ -71,7 +71,7 @@ void Terrain::buildHeightMapRandom( int size )
 
 	float seed = float( distr( gen ) );
 
-	step = (int)sqrt( size );
+	step = (int)glm::sqrt( size );
 	float start = -1000.f + 1000.f / step;
 	float z = start;
 
@@ -111,7 +111,7 @@ void Terrain::buildMesh()
 
 	vertices.reserve( 2 * height_map.size() );
 	
-	step = (int)sqrt( height_map.size() );
+	step = (int)glm::sqrt( height_map.size() );
 	int start = -1*(height_map.size() / 2) + step / 2;//even points on either sides of axis 
 	float zi = float(start);
 	unsigned int ij = 0;

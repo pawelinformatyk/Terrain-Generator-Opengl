@@ -28,15 +28,15 @@
 
 #include "Shader.h"
 
-Shader::Shader( const char* vertex_path, const char* fragment_path )
+Shader::Shader( const char* vertex_path, const char* fragment_path, const char* geometry_path )
 {
-	ID = loadShaders( vertex_path, fragment_path );
+	ID = loadShaders( vertex_path, fragment_path, geometry_path );
 }
 
-void Shader::shaderAttachFromFile( GLuint program, GLenum type, const char* filePath )
+void Shader::shaderAttachFromFile( GLuint program, GLenum type, const char* file_path )
 {
 	/* compile the shader */
-	GLuint shader = shaderCompileFromFile( type, filePath );
+	GLuint shader = shaderCompileFromFile( type, file_path );
 	if( shader != 0 )
 	{
         /* attach the shader to the program */
@@ -49,14 +49,14 @@ void Shader::shaderAttachFromFile( GLuint program, GLenum type, const char* file
 	}
 }
 
-GLuint Shader::shaderCompileFromFile( GLenum type, const char* filePath )
+GLuint Shader::shaderCompileFromFile( GLenum type, const char* file_path )
 {
 	char* source;
 	GLuint shader;
 	GLint length, result;
 
 	/* get shader source */
-	source = shaderLoadSource( filePath );
+	source = shaderLoadSource( file_path );
 	if( !source )
 		return 0;
 
@@ -79,7 +79,7 @@ GLuint Shader::shaderCompileFromFile( GLenum type, const char* filePath )
 		glGetShaderInfoLog( shader, length, &result, log );
 
 		/* print an error message and the info log */
-		fprintf( stderr, "shaderCompileFromFile(): Unable to compile %s: %s\n", filePath, log );
+		fprintf( stderr, "shaderCompileFromFile(): Unable to compile %s: %s\n", file_path, log );
 		free( log );
 
 		glDeleteShader( shader );
@@ -89,7 +89,7 @@ GLuint Shader::shaderCompileFromFile( GLenum type, const char* filePath )
 	return shader;
 }
 
-char* Shader::shaderLoadSource( const char* filePath )
+char* Shader::shaderLoadSource( const char* file_path )
 {
 	const size_t blockSize = 512;
 	FILE* fp;
@@ -98,10 +98,10 @@ char* Shader::shaderLoadSource( const char* filePath )
 	size_t tmp, sourceLength = 0;
 
 	/* open file */
-	fopen_s( &fp, filePath, "r" );
+	fopen_s( &fp, file_path, "r" );
 	if( !fp )
 	{
-		fprintf( stderr, "shaderLoadSource(): Unable to open %s for reading\n", filePath );
+		fprintf( stderr, "shaderLoadSource(): Unable to open %s for reading\n", file_path );
 		return NULL;
 	}
 
@@ -136,13 +136,14 @@ char* Shader::shaderLoadSource( const char* filePath )
 	return source;
 }
 
-int Shader::loadShaders( const char* vertexShaderPath, const char* fragmentShaderPath )
+int Shader::loadShaders( const char* vertex_path, const char* fragment_path, const char* geometry_path )
 {
 	GLint result;
     /* create program object and attach shaders */
 	GLint g_program = glCreateProgram();
-	shaderAttachFromFile( g_program, GL_VERTEX_SHADER, vertexShaderPath );
-	shaderAttachFromFile( g_program, GL_FRAGMENT_SHADER, fragmentShaderPath );
+	shaderAttachFromFile( g_program, GL_VERTEX_SHADER, vertex_path );
+	if(geometry_path) shaderAttachFromFile( g_program, GL_GEOMETRY_SHADER, geometry_path );
+	shaderAttachFromFile( g_program, GL_FRAGMENT_SHADER, fragment_path );
 
 	/* link the program and make sure that there were no errors */
 	glLinkProgram( g_program );

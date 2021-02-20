@@ -12,7 +12,7 @@ private:
 
 public:
 
-	Shader( const char* vertex_path, const char* fragment_path );
+	Shader( const char* vertex_path, const char* fragment_path,const char* geometry_path=NULL );
 	
     unsigned int getID()const{ return ID; };
     void use()
@@ -73,18 +73,18 @@ private:
 	* Returns a string containing the text in
 	* a vertex/fragment shader source file.
 	*/
-	static char* shaderLoadSource( const char* filePath );
+	static char* shaderLoadSource( const char* file_path );
 	/*
 	* Returns a shader object containing a shader
 	* compiled from the given GLSL shader file.
 	*/
-	static GLuint shaderCompileFromFile( GLenum type, const char* filePath );
+	static GLuint shaderCompileFromFile( GLenum type, const char* file_path );
 	/*
 	* Compiles and attaches a shader of the
 	* given type to the given program object.
 	*/
-	void shaderAttachFromFile( GLuint program, GLenum type, const char* filePath );
-	int loadShaders( const char* vertexShaderPath, const char* fragmentShaderPath );
+	void shaderAttachFromFile( GLuint program, GLenum type, const char* file_path );
+	int loadShaders( const char* vertex_path, const char* fragment_path, const char* geometry_path = NULL );
 
 
 };

@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <time.h>
 
 #include "glew.h"
 #include "freeglut.h"
@@ -8,11 +9,11 @@
 #include "shader.h" 
 #include "texture.h"
 #include "terrain.h"
-
+#include "skybox.h"
 
 //control variables 
-int screen_width = 1920/2;
-int screen_height = 1080/2;
+int screen_width = 800*2;
+int screen_height = 600*2;
 
 int mouse_positionX;
 int mouse_positionY;
@@ -22,12 +23,12 @@ double cameraX, cameraZ, cameraD, previous_cameraX, previous_cameraZ, previous_c
 glm::mat4 P;
 glm::vec3 light_position(-2,-2,-2);
 float scale = 1.f;
-float rotation=0;
+float rotation=30;
 GLfloat ad;//variable to control animation
 
 enum class Model
 {
-	model_base, model_texture, model_height, model_points, model_wireframe
+	model_base, model_texture, model_height, model_points, model_normals
 };
 Model display_model;
 
@@ -37,6 +38,9 @@ Shader* shader_heig;
 Shader* shader_tex;
 Texture* diffuse_map;
 Texture* specular_map;
+Shader* shader_skybox;
+Shader* shader_normals;
+Skybox* skybox;
 
 #define RAND1
 
@@ -45,9 +49,9 @@ void Draw()
 	glClearColor( 0.2f, 0.2f, 0.2f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	terrain->setPolygonMode( GL_FILL );
-
 	Shader* shader;
+
+	terrain->setPolygonMode( GL_FILL );
 
 	//Set model,view,projection
 	glm::mat4 MV = glm::mat4( 1.0f );
@@ -70,8 +74,19 @@ void Draw()
 	//set variables/uniforms for choosen display model 
 	switch( display_model )
 	{
+		case Model::model_normals:
+			//draw terrain's normals on top of default model
+			shader = shader_normals;
+			shader->use();
+
+			shader->setMat4( "MVP", MVP );
+
+			terrain->draw();
+
+			//draw default model
 		case Model::model_base:
 			shader = shader_def;
+			shader->use();
 
 			shader->setVec3( "viewPos", view_pos );
 			shader->setVec3( "material.diffuse", .0f, 0.5f, .0f );
@@ -85,11 +100,14 @@ void Draw()
 
 		case Model::model_height:
 			shader = shader_heig;
+			shader->use();
+
 			shader->setFloat( "maximum", terrain->getMaxHeight() );
 			break;
 
 		case Model::model_texture:
 			shader = shader_tex;
+			shader->use();
 
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, diffuse_map->getID() );
@@ -110,6 +128,7 @@ void Draw()
 
 		case Model::model_points:
 			shader = shader_def;
+			shader->use();
 
 			terrain->setPolygonMode( GL_POINT );
 			glPointSize( 2.5f );
@@ -118,17 +137,26 @@ void Draw()
 			shader->setVec3( "light.diffuse", 0, 0, 0 );
 			shader->setVec3( "light.specular", 0, 0, 0 );
 			break;
-
 		default:
 			shader = shader_def;
+			shader->use();
 	}
-
-	shader->use();
 
 	shader->setMat4( "MVP", MVP );
 
 	terrain->draw();
 	
+	shader_skybox->use();
+	shader_skybox->setInt( "skybox", 0 );
+
+	MV = glm::mat4( 1.0f );
+	MV = glm::rotate( MV, (float)glm::radians( cameraZ + 25), glm::vec3( 1, 0, 0 ) );
+	MV = glm::rotate( MV, (float)glm::radians( cameraX + rotation), glm::vec3( 0, 1, 0 ) );
+	MVP = P * MV;
+	shader_skybox->setMat4( "MVP", MVP );
+
+	skybox->Draw();
+
 	glFlush();
 	glutSwapBuffers();
 }
@@ -199,6 +227,9 @@ void Keys( GLubyte key, int x, int y )
 			break;
 		case '4':
 			display_model = Model::model_points;
+			break;
+		case '5':
+			display_model = Model::model_normals;
 			break;
 		case '[':
 			scale -= step;
@@ -271,11 +302,13 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
+	shader_normals = new Shader( "resources/shaders/normals_vs.glsl", "resources/shaders/normals_fs.glsl", "resources/shaders/normals_gs.glsl" );
+	shader_skybox = new Shader( "resources/shaders/skybox_vs.glsl", "resources/shaders/skybox_fs.glsl" );
 	shader_def = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl" );
 	shader_heig = new Shader( "resources/shaders/height_vshader.glsl", "resources/shaders/height_fshader.glsl" );
 	shader_tex = new Shader( "resources/shaders/vertex_shader.glsl", "resources/shaders/texture_fshader.glsl" );
-	diffuse_map = new Texture( "resources/tatry3.bmp" );
-	specular_map = new Texture( "resources/tatry3gray.bmp" );
+	diffuse_map = new Texture( "resources/textures/tatry3.bmp" );
+	specular_map = new Texture( "resources/textures/tatry3gray.bmp" );
 
 #ifdef RAND
 	terrain = new Terrain( 160000 );
@@ -283,7 +316,26 @@ int main( int argc, char** argv )
 	terrain = new Terrain( "resources/tatry.txt" );
 #endif
 
-	
+	std::vector<std::string> faces
+	{
+		"resources/textures/skybox/right.jpg",
+		 "resources/textures/skybox/left.jpg",
+		"resources/textures/skybox/top.jpg",
+		"resources/textures/skybox/bottom.jpg",
+		"resources/textures/skybox/front.jpg",
+		 "resources/textures/skybox/back.jpg"
+	};
+	//std::vector<std::string> faces
+	//{
+	//	"resources/textures/skybox_posz/posx.jpg",
+	//	 "resources/textures/skybox_posz/negx.jpg",
+	//	"resources/textures/skybox_posz/posy.jpg",
+	//	"resources/textures/skybox_posz/negy.jpg",
+	//	"resources/textures/skybox_posz/posz.jpg",
+	//	 "resources/textures/skybox_posz/negz.jpg"
+	//};
+	skybox = new Skybox( faces );
+
 	glutMainLoop();
 
 	delete terrain;
@@ -292,6 +344,9 @@ int main( int argc, char** argv )
 	delete shader_tex;
 	delete diffuse_map;
 	delete specular_map;
+	delete shader_skybox;
+	delete skybox;
+	delete shader_normals;
 
 	return 0;
 }

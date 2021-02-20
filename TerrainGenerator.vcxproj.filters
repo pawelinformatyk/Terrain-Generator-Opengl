@@ -179,6 +179,8 @@
     </ClInclude>
     <ClInclude Include="src\shader.h" />
     <ClInclude Include="src\noise.h" />
+    <ClInclude Include="Dependencies\include\stb_image.h" />
+    <ClInclude Include="src\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -329,15 +331,20 @@
     <None Include="resources\shaders\vertex_shader.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="resources\shaders\skybox_fs.glsl" />
+    <None Include="resources\shaders\skybox_vs.glsl" />
+    <None Include="resources\shaders\normals_fs.glsl" />
+    <None Include="resources\shaders\normals_gs.glsl" />
+    <None Include="resources\shaders\normals_vs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependencies\lib\freeglut.lib" />
     <Library Include="Dependencies\lib\glew32.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\tatry3.bmp" />
+    <Text Include="resources\tatry.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="resources\tatry.txt" />
+    <Image Include="resources\textures\tatry3.bmp" />
   </ItemGroup>
 </Project>

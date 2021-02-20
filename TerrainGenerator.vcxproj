@@ -91,8 +91,10 @@
     <ClInclude Include="Dependencies\include\glew.h" />
     <ClInclude Include="Dependencies\include\glut.h" />
     <ClInclude Include="Dependencies\include\glxew.h" />
+    <ClInclude Include="Dependencies\include\stb_image.h" />
     <ClInclude Include="Dependencies\include\wglew.h" />
     <ClInclude Include="GL\glew.h" />
+    <ClInclude Include="src\Skybox.h" />
     <ClInclude Include="src\noise.h" />
     <ClInclude Include="src\shader.h" />
     <ClInclude Include="src\texture.h" />
@@ -253,6 +255,11 @@
     <None Include="resources\shaders\height_vshader.glsl" />
     <None Include="resources\shaders\light_fshader.glsl" />
     <None Include="resources\shaders\light_vshader.glsl" />
+    <None Include="resources\shaders\normals_fs.glsl" />
+    <None Include="resources\shaders\normals_gs.glsl" />
+    <None Include="resources\shaders\normals_vs.glsl" />
+    <None Include="resources\shaders\skybox_fs.glsl" />
+    <None Include="resources\shaders\skybox_vs.glsl" />
     <None Include="resources\shaders\texture_fshader.glsl" />
     <None Include="resources\shaders\vertex_shader.glsl" />
     <None Include="Dependencies\include\glm\detail\func_common.inl" />
@@ -375,7 +382,7 @@
     <Library Include="Dependencies\lib\glew32.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\tatry3.bmp" />
+    <Image Include="resources\textures\tatry3.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\tatry.txt" />

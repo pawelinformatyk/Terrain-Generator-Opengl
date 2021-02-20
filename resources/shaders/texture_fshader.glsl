@@ -26,7 +26,6 @@ uniform vec3 viewPos;
 uniform int terrain_size;
 uniform int terrain_step;
 
-
 void main()
 {
     vec2 texture_cords=vec2(  1-(FragPos.x+terrain_size/2)/(terrain_size-terrain_step),
@@ -47,7 +46,6 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = texture(material.specular,texture_cords).rgb* spec * light.specular;
    
-
     vec3 result = ( ambient + diffuse +specular) ;
     FragColor =vec4(result,1);
 }

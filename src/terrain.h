@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "texture.h"
+#include "shader.h"
 #include "glew.h"
 #include "freeglut.h"
 #include "glm/glm.hpp" 
@@ -21,6 +23,9 @@ private:
 	std::vector<GLuint> indices;
 	std::vector<float> height_map;
 
+	const Texture diffuse_map;
+	const Texture specular_map;
+
 	unsigned int VAO, VBO, EBO;
 
 	GLenum polygon_mode=GL_FILL;
@@ -37,12 +42,12 @@ private:
 	glm::vec3 calculateNormal( int x, int z );
 
 public:
-	Terrain( std::string file_name );//terrain from file 
-	Terrain( int size );//random terrain 
-	Terrain( std::string texture,int size );
+	Terrain( const std::string& vertices_file_path, const std::string& diff_map_path, const std::string& spec_map_path );//terrain from file 
+	//Terrain( int size );//random terrain 
+	//Terrain( std::string texture,int size );
 	~Terrain();
 
-	void draw();
+	void draw(Shader& shader);
 
 	void setPolygonMode(GLenum mode);//sets what to draw, GL_FILL or GL_POINTS
 	float getMaxHeight();

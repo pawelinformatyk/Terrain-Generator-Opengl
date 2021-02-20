@@ -6,23 +6,25 @@
 #include "terrain.h"
 #include "noise.h"
 
-Terrain::Terrain( std::string file_name )
+
+Terrain::Terrain( const std::string& vertices_file_path, const std::string& diff_map_path, const std::string& spec_map_path )
+	:diffuse_map(diff_map_path.c_str()),specular_map(spec_map_path.c_str())
 {
-	buildHeightMapFromFile( file_name );
+	buildHeightMapFromFile( vertices_file_path );
 	buildMesh();
 	buildIndices();
 	
 	setup();
 }
 
-Terrain::Terrain( int size )
-{
-	buildHeightMapRandom(size);
-	buildMesh();
-	buildIndices();
-
-	setup();
-}
+//Terrain::Terrain( int size )
+//{
+//	buildHeightMapRandom(size);
+//	buildMesh();
+//	buildIndices();
+//
+//	setup();
+//}
 
 Terrain::~Terrain()
 {
@@ -31,7 +33,7 @@ Terrain::~Terrain()
 	glDeleteBuffers( 1, &EBO );
 }
 
-void Terrain::buildHeightMapFromFile( std::string file_name )
+void Terrain::buildHeightMapFromFile(const std::string file_name )
 {
 	std::ifstream file( file_name );
 	if( !file.is_open() )
@@ -265,8 +267,17 @@ glm::vec3 Terrain::calculateNormal( int x, int z )
 	return  glm::vec3( (hl - hr) / step, 2.0f, -(hd - hu) / step );
 }
 
-void Terrain::draw()
+void Terrain::draw(Shader& shader)
 {
+	glActiveTexture( GL_TEXTURE0 );
+	glBindTexture( GL_TEXTURE_2D, diffuse_map.getID() );
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_2D, specular_map.getID() );
+
+	shader.use();
+	shader.setInt( "material.diffuse", 0 );
+	shader.setInt( "material.specular", 1 );
+
 	glBindVertexArray( VAO );
 	glPolygonMode( GL_FRONT_AND_BACK, polygon_mode );
 	glDrawElements( GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0 );

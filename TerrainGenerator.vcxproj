@@ -251,8 +251,8 @@
     <None Include="Dependencies\lib\freeglut.dll" />
     <None Include="Dependencies\lib\glew32.dll" />
     <None Include="resources\shaders\fragment_shader.glsl" />
+    <None Include="resources\shaders\gradient_fs.glsl" />
     <None Include="resources\shaders\height_fshader.glsl" />
-    <None Include="resources\shaders\height_vshader.glsl" />
     <None Include="resources\shaders\light_fshader.glsl" />
     <None Include="resources\shaders\light_vshader.glsl" />
     <None Include="resources\shaders\normals_fs.glsl" />
@@ -260,6 +260,7 @@
     <None Include="resources\shaders\normals_vs.glsl" />
     <None Include="resources\shaders\skybox_fs.glsl" />
     <None Include="resources\shaders\skybox_vs.glsl" />
+    <None Include="resources\shaders\terrain_water_fs.glsl" />
     <None Include="resources\shaders\texture_fshader.glsl" />
     <None Include="resources\shaders\vertex_shader.glsl" />
     <None Include="Dependencies\include\glm\detail\func_common.inl" />

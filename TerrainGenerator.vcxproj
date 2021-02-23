@@ -80,6 +80,7 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\terrain.cpp" />
     <ClCompile Include="Dependencies\include\glm\detail\glm.cpp" />
@@ -250,9 +251,10 @@
   <ItemGroup>
     <None Include="Dependencies\lib\freeglut.dll" />
     <None Include="Dependencies\lib\glew32.dll" />
-    <None Include="resources\shaders\fragment_shader.glsl" />
+    <None Include="resources\shaders\blank_fs.glsl" />
+    <None Include="resources\shaders\blank_vs.glsl" />
     <None Include="resources\shaders\gradient_fs.glsl" />
-    <None Include="resources\shaders\height_fshader.glsl" />
+    <None Include="resources\shaders\stepGradient_fs.glsl" />
     <None Include="resources\shaders\light_fshader.glsl" />
     <None Include="resources\shaders\light_vshader.glsl" />
     <None Include="resources\shaders\normals_fs.glsl" />
@@ -260,9 +262,9 @@
     <None Include="resources\shaders\normals_vs.glsl" />
     <None Include="resources\shaders\skybox_fs.glsl" />
     <None Include="resources\shaders\skybox_vs.glsl" />
-    <None Include="resources\shaders\terrain_water_fs.glsl" />
-    <None Include="resources\shaders\texture_fshader.glsl" />
-    <None Include="resources\shaders\vertex_shader.glsl" />
+    <None Include="resources\shaders\terrainWater_fs.glsl" />
+    <None Include="resources\shaders\texture_fs.glsl" />
+    <None Include="resources\shaders\vertexshader.glsl" />
     <None Include="Dependencies\include\glm\detail\func_common.inl" />
     <None Include="Dependencies\include\glm\detail\func_common_simd.inl" />
     <None Include="Dependencies\include\glm\detail\func_exponential.inl" />

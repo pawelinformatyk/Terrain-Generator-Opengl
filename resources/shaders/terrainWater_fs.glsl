@@ -21,17 +21,15 @@ uniform float minimum;
 void main()
 {
 //reflective to do 
-
-
     vec3 mat_specular=vec3(0.1);
-    float shininess=2;
+    float shininess=8;
     vec3 color;
 
     if(FragPos.y-minimum<=(maximum-minimum)/4)
     {
         color = mix(vec3(0,0,0.2),vec3(0,0,1), (FragPos.y-minimum)/( ( maximum-minimum)/4 ));
-        mat_specular=vec3(0.5);
-        shininess=32;
+        mat_specular=vec3(0.255);
+        shininess=1024;
     }
     else if(FragPos.y-minimum<=(maximum-minimum)/2)
     {
@@ -57,8 +55,12 @@ void main()
 
 // specular
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    //phong
+    //vec3 reflectDir = reflect(-lightDir, norm);
+    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
+    //Blinn-Phong
+    vec3 halfwayDir= normalize(lightDir+viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
     vec3 specular = mat_specular* spec * light.specular;
     
     vec3 result =ambient+diffuse+specular;

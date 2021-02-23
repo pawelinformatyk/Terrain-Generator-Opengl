@@ -12,6 +12,7 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL\glew.h">
@@ -310,22 +311,10 @@
     <None Include="Dependencies\include\glm\gtx\vector_angle.inl" />
     <None Include="Dependencies\include\glm\gtx\vector_query.inl" />
     <None Include="Dependencies\include\glm\gtx\wrap.inl" />
-    <None Include="resources\shaders\fragment_shader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="resources\shaders\height_fshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="resources\shaders\light_fshader.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="resources\shaders\light_vshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="resources\shaders\texture_fshader.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="resources\shaders\vertex_shader.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="resources\shaders\skybox_fs.glsl" />
@@ -334,7 +323,18 @@
     <None Include="resources\shaders\normals_gs.glsl" />
     <None Include="resources\shaders\normals_vs.glsl" />
     <None Include="resources\shaders\gradient_fs.glsl" />
-    <None Include="resources\shaders\terrain_water_fs.glsl" />
+    <None Include="resources\shaders\blank_vs.glsl" />
+    <None Include="resources\shaders\blank_fs.glsl" />
+    <None Include="resources\shaders\vertexshader.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\texture_fs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="resources\shaders\terrainWater_fs.glsl" />
+    <None Include="resources\shaders\stepGradient_fs.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependencies\lib\freeglut.lib" />

@@ -28,8 +28,9 @@ uniform int terrain_step;
 
 void main()
 {
-    vec2 texture_cords=vec2(  1-(FragPos.x+terrain_size/2)/(terrain_size-terrain_step),
-    (FragPos.z+terrain_size/2)/(terrain_size-terrain_step) );
+    vec2 texture_cords=vec2(  
+    (FragPos.x+(terrain_size-terrain_step)/2)/(terrain_size-terrain_step),
+    (FragPos.z+(terrain_size-terrain_step)/2)/(terrain_size-terrain_step));
 
 // ambient
     vec3 ambient = light.ambient * texture(material.diffuse,texture_cords).rgb;
@@ -42,8 +43,12 @@ void main()
 
 // specular
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    //phong
+    //vec3 reflectDir = reflect(-lightDir, norm);
+    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
+    //Blinn-Phong
+    vec3 halfwayDir= normalize(lightDir+viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
     vec3 specular = texture(material.specular,texture_cords).rgb* spec * light.specular;
    
     vec3 result = ( ambient + diffuse +specular) ;

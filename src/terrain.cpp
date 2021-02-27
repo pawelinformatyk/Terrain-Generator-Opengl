@@ -17,14 +17,25 @@ Terrain::Terrain( const std::string& vertices_file_path, const std::string& diff
 	setup();
 }
 
-//Terrain::Terrain( int size )
-//{
-//	buildHeightMapRandom(size);
-//	buildMesh();
-//	buildIndices();
-//
-//	setup();
-//}
+Terrain::Terrain( int size, const std::string& diff_map_path, const std::string& spec_map_path )
+	:diffuse_map( diff_map_path.c_str() ), specular_map( spec_map_path.c_str() )
+{
+	buildHeightMapRandom(size);
+	buildMesh();
+	buildIndices();
+
+	setup();
+}
+
+Terrain::Terrain( const Texture& tex, const std::string& diff_map_path, const std::string& spec_map_path )
+	:diffuse_map( diff_map_path.c_str() ), specular_map( spec_map_path.c_str() )
+{
+	buildHeightMapFromTexture( tex );
+	buildMesh();
+	buildIndices();
+
+	setup();
+}
 
 Terrain::~Terrain()
 {
@@ -33,7 +44,7 @@ Terrain::~Terrain()
 	glDeleteBuffers( 1, &EBO );
 }
 
-void Terrain::buildHeightMapFromFile(const std::string file_name )
+void Terrain::buildHeightMapFromFile(const std::string& file_name )
 {
 	std::ifstream file( file_name );
 	if( !file.is_open() )
@@ -62,14 +73,38 @@ void Terrain::buildHeightMapFromFile(const std::string file_name )
 	height_min = *input.first;
 }
 
+void Terrain::buildHeightMapFromTexture(const Texture& tex )
+{
+	GLubyte* pixels = tex.getPixels();
+
+	int width = tex.getWidth();
+	int height = tex.getHeight();
+
+	height_map.reserve( width*height );
+
+	for( int i = 0; i < height; i++ )
+	{
+		for( int j = 0; j < width; j++ )
+		{
+			GLuint r = pixels[ j*3 + i * width*3 ];
+			GLuint g = pixels[ j*3 + 1 + i * width*3 ];
+			GLuint b = pixels[ j*3 + 2 + i * width*3 ];
+			
+			height_map.push_back( float(r+b+g) );
+		}
+	}
+
+	mapValues( 1, 500 );
+	findMinMax();
+}
+
 void Terrain::buildHeightMapRandom( int size )
 {
 	height_map.reserve( size );
 
-
 	std::random_device rd; // obtain a random number from hardware
 	std::mt19937 gen( rd() ); // seed the generator
-	std::uniform_real_distribution<> distr( 0.01, 0.03 ); // define the range,i like this range
+	std::uniform_real_distribution<> distr( 0.01, 0.03 ); // I like this range
 
 	float seed = float( distr( gen ) );
 
@@ -82,25 +117,12 @@ void Terrain::buildHeightMapRandom( int size )
 		float x = start;
 		for( int j = 0; j < step; j++, x += 2000.f / step )
 		{
-			height_map.push_back( (PerlinNoise::getOctavePerlin( x * seed, z * seed, 0, 4, 0.1f, 1, 0.25f )) );
+			height_map.push_back( (PerlinNoise::getOctavePerlin( x * seed, z * seed, seed, 4, 0.1f, 1, 0.25f )) );
 		}
 	}
 
-	//map values 
-	float output_end = 1700.f;
-	float output_start = 300.f;
-
-	float slope = (output_end - output_start)/2;
-
-	for( auto& v : height_map )
-	{
-		v = output_start + floor( slope * (v)+0.5f );
-	}
-
-	auto input = std::minmax_element( height_map.begin(), height_map.end() );
-
-	height_max = *input.second;
-	height_min = *input.first;
+	mapValues( 1, 1000 );
+	findMinMax();
 }
 
 void Terrain::buildMesh()
@@ -125,6 +147,27 @@ void Terrain::buildMesh()
 		{
 			vertices.emplace_back( glm::vec3(xi, height_map[ ij++ ], zi), calculateNormal( j, i ) );
 		}
+	}
+}
+
+void Terrain::findMinMax()
+{
+	auto input = std::minmax_element( height_map.begin(), height_map.end() );
+
+	height_max = *input.second;
+	height_min = *input.first;
+}
+
+void Terrain::mapValues( float from, float to )
+{
+	float output_end = to;
+	float output_start = from;
+
+	float slope = (output_end - output_start) / 2;
+
+	for( auto& v : height_map )
+	{
+		v = output_start + floor( slope * (v)+0.5f );
 	}
 }
 

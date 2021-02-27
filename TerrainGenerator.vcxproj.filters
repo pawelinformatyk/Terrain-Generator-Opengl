@@ -182,6 +182,7 @@
     <ClInclude Include="src\noise.h" />
     <ClInclude Include="Dependencies\include\stb_image.h" />
     <ClInclude Include="src\Skybox.h" />
+    <ClInclude Include="src\CameraMouse.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -345,5 +346,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\textures\tatry3.bmp" />
+    <Image Include="resources\textures\skybox\back.jpg" />
+    <Image Include="resources\textures\skybox\bottom.jpg" />
+    <Image Include="resources\textures\skybox\front.jpg" />
+    <Image Include="resources\textures\skybox\left.jpg" />
+    <Image Include="resources\textures\skybox\right.jpg" />
+    <Image Include="resources\textures\skybox\top.jpg" />
+    <Image Include="resources\textures\tatry3gray.bmp" />
   </ItemGroup>
 </Project>

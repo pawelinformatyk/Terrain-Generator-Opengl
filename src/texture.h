@@ -6,11 +6,18 @@
 
 class Texture
 {
-private:
-	GLuint ID;
-
 public :
-
-	GLuint getID()const{return ID; };
 	Texture( const char* file_name );
+	GLubyte* getPixels()const;
+	
+	GLuint getID()const{return ID; };
+	int getHeight()const{return height;}
+	int getWidth()const{return width;}
+
+private:
+	int width;
+	int height;
+	int nrChannels;
+
+	GLuint ID;
 };

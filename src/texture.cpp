@@ -75,9 +75,6 @@ Texture::Texture( const char* file_name )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     
     // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    
-    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     unsigned char* data = stbi_load( file_name, &width, &height, &nrChannels, 0 );
     
     if( data )
@@ -88,8 +85,19 @@ Texture::Texture( const char* file_name )
     else
     {
         printf("Failed to load texture");
+        exit( 0 );
     }
 
     stbi_image_free( data );
+}
+
+GLubyte* Texture::getPixels()const
+{
+    GLubyte* pixels = new GLubyte[ width * height * 3 ];
+    
+    glBindTexture( GL_TEXTURE_2D, ID );
+    glGetTexImage( GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels );
+
+    return pixels;
 }
 

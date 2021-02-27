@@ -10,16 +10,14 @@
 #include "texture.h"
 #include "terrain.h"
 #include "skybox.h"
+#include "CameraMouse.h"
 
 
 //control variables 
 int screen_width = 800*2;
 int screen_height = 600*2;
 
-int mouse_positionX;
-int mouse_positionY;
-int mbutton;
-double cameraX, cameraZ, cameraD, previous_cameraX, previous_cameraZ, previous_cameraD;
+struct CameraMouse camera_mouse;
 glm::vec3 light_position(-2,-2,-2);
 float scale = 1.f;
 float rotation=0;
@@ -31,9 +29,9 @@ enum class Choice : int
 {
 	texture, step_gradient, blank, normals, gradient, terrain_water,skybox
 };
+
 Choice display;
 std::vector<Shader>shaders;
-
 Terrain* terrain;
 Skybox* skybox;
 
@@ -50,20 +48,20 @@ void Draw()
 	M = glm::scale( M, glm::vec3( scale_xz, scale_y, scale_xz ) );
 
 	glm::mat4 V = glm::mat4( 1.0f );
-	V = glm::translate( V, glm::vec3( 0, 0, cameraD - 4 ) );
-	V = glm::rotate( V, (float)glm::radians( cameraZ +25 ), glm::vec3( 1, 0, 0 ) );
-	V = glm::rotate( V, (float)glm::radians( cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
+	V = glm::translate( V, glm::vec3( 0, 0, camera_mouse.cameraD - 4 ) );
+	V = glm::rotate( V, (float)glm::radians( camera_mouse.cameraZ +25 ), glm::vec3( 1, 0, 0 ) );
+	V = glm::rotate( V, (float)glm::radians( camera_mouse.cameraX + 180 + rotation ), glm::vec3( 0, 1, 0 ) );
 
 	glm::mat4 MVP = P * V * M;
 
 	//position of camera
 	//distance between 0,0,0 to camera(view pos) 
 	const unsigned int r = unsigned int(terrain->getSizeVertices() / 2 + 1 / scale_xz);
-	float xn = float( r * glm::sin( glm::radians( 90 - cameraZ-25  ) ) *
-		glm::cos( glm::radians( cameraX  -90+ rotation ) ) );
-	float zn=float( r* glm::sin( glm::radians( 90 - cameraZ  -25) ) *
-		glm::sin( glm::radians( cameraX  -90+ rotation ) ) );
-	float yn = float(r* glm::cos( glm::radians( 90 - cameraZ -25 ) ));
+	float xn = float( r * glm::sin( glm::radians( 90 - camera_mouse.cameraZ-25  ) ) *
+		glm::cos( glm::radians( camera_mouse.cameraX  -90+ rotation ) ) );
+	float zn=float( r* glm::sin( glm::radians( 90 - camera_mouse.cameraZ  -25) ) *
+		glm::sin( glm::radians( camera_mouse.cameraX  -90+ rotation ) ) );
+	float yn = float(r* glm::cos( glm::radians( 90 - camera_mouse.cameraZ -25 ) ));
 	glm::vec3 view_pos( xn, yn, zn );
 
 	Shader* shader;
@@ -92,12 +90,11 @@ void Draw()
 			shader->setVec3( "viewPos", view_pos );
 			shader->setInt( "terrain_size", terrain->getSizeVertices() );
 			shader->setInt( "terrain_step", terrain->getStep() );
-			shader->setFloat( "material.shininess", 8 );
+			shader->setFloat( "material.shininess", 32 );
 			shader->setVec3( "light.ambient", glm::vec3( 0.1f ) );
 			shader->setVec3( "light.diffuse", glm::vec3( 0.5f ) );
 			shader->setVec3( "light.specular", glm::vec3( 1.f ) );
 			shader->setVec3( "light.direction", light_position );
-
 			break;
 
 		case Choice::step_gradient:
@@ -129,7 +126,6 @@ void Draw()
 			shader->setVec3( "light.diffuse", glm::vec3( 0.5f ) );
 			shader->setVec3( "light.specular", glm::vec3( 1.f ) );
 			shader->setVec3( "light.direction", light_position );
-
 			break;
 
 		case Choice::blank:
@@ -146,7 +142,6 @@ void Draw()
 			shader = &shaders[ static_cast<int>(Choice::blank) ];
 			shader->use();
 			break;
-
 	}
 
 	terrain->draw( *shader );
@@ -157,8 +152,8 @@ void Draw()
 	shader->setInt( "skybox", 0 );
 
 	V = glm::mat4( 1.0f );
-	V = glm::rotate( V, (float)glm::radians( cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
-	V = glm::rotate( V, (float)glm::radians( cameraX + rotation ), glm::vec3( 0, 1, 0 ) );
+	V = glm::rotate( V, (float)glm::radians( camera_mouse.cameraZ + 25 ), glm::vec3( 1, 0, 0 ) );
+	V = glm::rotate( V, (float)glm::radians( camera_mouse.cameraX + rotation ), glm::vec3( 0, 1, 0 ) );
 
 	shader->setMat4( "VP", P * V );
 
@@ -169,30 +164,30 @@ void Draw()
 }
 void MouseClick( int button, int state, int x, int y )
 {
-	mbutton = button;
+	camera_mouse.button = button;
 	switch( state )
 	{
 		case GLUT_UP:
 			break;
 		case GLUT_DOWN:
-			mouse_positionX = x;
-			mouse_positionY = y;
-			previous_cameraX = cameraX;
-			previous_cameraZ = cameraZ;
-			previous_cameraD = cameraD;
+			camera_mouse.mouse_positionX = x;
+			camera_mouse.mouse_positionY = y;
+			camera_mouse.previous_cameraX = camera_mouse.cameraX;
+			camera_mouse.previous_cameraZ = camera_mouse.cameraZ;
+			camera_mouse.previous_cameraD = camera_mouse.cameraD;
 			break;
 	}
 }
 void MouseMovement( int x, int y )
 {
-	if( mbutton == GLUT_LEFT_BUTTON )
+	if( camera_mouse.button == GLUT_LEFT_BUTTON )
 	{
-		cameraX = previous_cameraX - ((double)mouse_positionX - x) * 0.1;
-		cameraZ = previous_cameraZ - ((double)mouse_positionY - y) * 0.1;
+		camera_mouse.cameraX = camera_mouse.previous_cameraX - ((double)camera_mouse.mouse_positionX - x) * 0.1;
+		camera_mouse.cameraZ = camera_mouse.previous_cameraZ - ((double)camera_mouse.mouse_positionY - y) * 0.1;
 	}
-	if( mbutton == GLUT_RIGHT_BUTTON )
+	if( camera_mouse.button == GLUT_RIGHT_BUTTON )
 	{
-		cameraD = previous_cameraD + ((double)mouse_positionY - y) * 0.1;
+		camera_mouse.cameraD = camera_mouse.previous_cameraD + ((double)camera_mouse.mouse_positionY - y) * 0.1;
 	}
 }
 void Keys( GLubyte key, int x, int y )
@@ -309,7 +304,6 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
-//	draw_texture, draw_step_gradient, blank, draw_normals, draw_gradient, draw_terrain_water
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/texture_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/stepGradient_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/blank_vs.glsl", "resources/shaders/blank_fs.glsl" );
@@ -318,27 +312,26 @@ int main( int argc, char** argv )
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/terrainWater_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/skybox_vs.glsl", "resources/shaders/skybox_fs.glsl" );
 
-	Terrain terr( "resources/tatry.txt", "resources/textures/tatry3.bmp", "resources/textures/tatry3gray.bmp" );
+	//from texture - heightmap 
+	Terrain terr( Texture("resources/textures/earthheightmap.bmp"), "resources/textures/earth.bmp", "resources/textures/earthgray.bmp" );
+
+	//random 
+	//Terrain terr( 1000000, "resources/textures/CliffJagged_COL.bmp", "resources/textures/CliffJagged_GLOSS.bmp" );
+
+	//from file 
+	//Terrain terr( "resources/tatry.txt", "resources/textures/tatry3.bmp", "resources/textures/tatry3gray.bmp" );
+
 	terrain =&terr;
 
-	std::vector<std::string> faces
+	std::array<std::string,6> faces
 	{
-		"resources/textures/skybox/right.jpg",
-		 "resources/textures/skybox/left.jpg",
-		"resources/textures/skybox/top.jpg",
-		"resources/textures/skybox/bottom.jpg",
-		"resources/textures/skybox/front.jpg",
-		 "resources/textures/skybox/back.jpg"
+		"resources/textures/skybox/right.jpg",	//	"resources/textures/skybox_posz/posx.jpg",
+		 "resources/textures/skybox/left.jpg",	//	 "resources/textures/skybox_posz/negx.jpg",
+		"resources/textures/skybox/top.jpg",//	"resources/textures/skybox_posz/posy.jpg",
+		"resources/textures/skybox/bottom.jpg",//	"resources/textures/skybox_posz/negy.jpg",
+		"resources/textures/skybox/front.jpg",//	"resources/textures/skybox_posz/posz.jpg",
+		 "resources/textures/skybox/back.jpg"//	 "resources/textures/skybox_posz/negz.jpg"
 	};
-	//std::vector<std::string> faces
-	//{
-	//	"resources/textures/skybox_posz/posx.jpg",
-	//	 "resources/textures/skybox_posz/negx.jpg",
-	//	"resources/textures/skybox_posz/posy.jpg",
-	//	"resources/textures/skybox_posz/negy.jpg",
-	//	"resources/textures/skybox_posz/posz.jpg",
-	//	 "resources/textures/skybox_posz/negz.jpg"
-	//};
 	Skybox skbox( faces );
 	skybox = &skbox;
 

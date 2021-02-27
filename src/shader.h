@@ -9,9 +9,6 @@
 
 class Shader
 {
-private:
-	unsigned int ID;
-
 public:
 
 	Shader( const char* vertex_path, const char* fragment_path,const char* geometry_path=NULL );
@@ -71,6 +68,7 @@ public:
     }
 
 private:
+    unsigned int ID;
 	/*
 	* Returns a string containing the text in
 	* a vertex/fragment shader source file.
@@ -87,6 +85,4 @@ private:
 	*/
 	void shaderAttachFromFile( GLuint program, GLenum type, const char* file_path );
 	int loadShaders( const char* vertex_path, const char* fragment_path, const char* geometry_path = NULL );
-
-
 };

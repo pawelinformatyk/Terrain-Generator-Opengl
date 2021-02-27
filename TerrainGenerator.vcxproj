@@ -95,6 +95,7 @@
     <ClInclude Include="Dependencies\include\stb_image.h" />
     <ClInclude Include="Dependencies\include\wglew.h" />
     <ClInclude Include="GL\glew.h" />
+    <ClInclude Include="src\CameraMouse.h" />
     <ClInclude Include="src\Skybox.h" />
     <ClInclude Include="src\noise.h" />
     <ClInclude Include="src\shader.h" />
@@ -385,7 +386,14 @@
     <Library Include="Dependencies\lib\glew32.lib" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\textures\skybox\back.jpg" />
+    <Image Include="resources\textures\skybox\bottom.jpg" />
+    <Image Include="resources\textures\skybox\front.jpg" />
+    <Image Include="resources\textures\skybox\left.jpg" />
+    <Image Include="resources\textures\skybox\right.jpg" />
+    <Image Include="resources\textures\skybox\top.jpg" />
     <Image Include="resources\textures\tatry3.bmp" />
+    <Image Include="resources\textures\tatry3gray.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\tatry.txt" />

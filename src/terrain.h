@@ -18,6 +18,21 @@ struct Vertex
 
 class Terrain
 {
+public:
+	Terrain( const std::string& vertices_file_path, const std::string& diff_map_path, const std::string& spec_map_path );//terrain from file 
+	Terrain( int size, const std::string& diff_map_path, const std::string& spec_map_path );//random terrain 
+	Terrain( const Texture& tex, const std::string& diff_map_path, const std::string& spec_map_path );
+	~Terrain();
+
+	void draw( Shader& shader );
+
+	void setPolygonMode( GLenum mode );//sets what to draw, GL_FILL or GL_POINTS
+	float getMaxHeight();
+	float getMinHeight();
+	int getSizeIndices();
+	int getSizeVertices();
+	int getStep();
+
 private:
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
@@ -33,28 +48,16 @@ private:
 	float height_min;
 	int step;
 
+	void findMinMax();
+	void mapValues( float from, float to );//map heightmap values
 	void buildIndices();
 	void buildMesh();
 	void setup();
-	void buildHeightMapFromFile(std::string file_name);
+	void buildHeightMapFromFile( const std::string& file_name );
+	void buildHeightMapFromTexture(const Texture& tex );
 	void buildHeightMapRandom(int size);
 
 	glm::vec3 calculateNormal( int x, int z );
-
-public:
-	Terrain( const std::string& vertices_file_path, const std::string& diff_map_path, const std::string& spec_map_path );//terrain from file 
-	//Terrain( int size );//random terrain 
-	//Terrain( std::string texture,int size );
-	~Terrain();
-
-	void draw(Shader& shader);
-
-	void setPolygonMode(GLenum mode);//sets what to draw, GL_FILL or GL_POINTS
-	float getMaxHeight();
-	float getMinHeight();
-	int getSizeIndices();
-	int getSizeVertices();
-	int getStep();
 };
 
 

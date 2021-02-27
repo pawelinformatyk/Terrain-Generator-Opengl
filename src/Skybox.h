@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <vector>
+#include <array>
 #include <string>
 
 #include "glew.h"
@@ -12,6 +12,38 @@
 
 class Skybox
 {
+public:
+	Skybox( std::array<std::string,6>&faces )
+	{
+		ID = loadCubemap( faces );
+
+		glGenVertexArrays( 1, &VAO);
+		glGenBuffers( 1, &VBO );
+		glBindVertexArray( VAO );
+		glBindBuffer( GL_ARRAY_BUFFER, VBO );
+		glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), &vertices, GL_STATIC_DRAW );
+		glEnableVertexAttribArray( 0 );
+		glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (void*)0 );
+	}
+	~Skybox()
+	{
+		glDeleteVertexArrays( 1, &VAO );
+		glDeleteBuffers( 1, &VBO );
+	}
+	void Draw()
+	{
+		glDepthFunc( GL_LEQUAL );  // change depth function so depth test passes when values are equal to depth buffer's content
+
+		glBindVertexArray( VAO );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_CUBE_MAP, ID );
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		glDrawArrays( GL_TRIANGLES, 0, 36 );
+		glBindVertexArray( 0 );
+
+		glDepthFunc( GL_LESS ); // set depth function back to default
+	}
+
 private:
 	unsigned int ID;
 	std::vector<std::string> faces;
@@ -61,7 +93,7 @@ private:
 		 1.0f, -1.0f,  1.0f
 	};
 
-	unsigned int loadCubemap( std::vector<std::string>& faces )
+	unsigned int loadCubemap( std::array<std::string, 6>& faces )
 	{
 		unsigned int textureID;
 		glGenTextures( 1, &textureID );
@@ -89,38 +121,6 @@ private:
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
 		return textureID;
-	}
-
-public:
-	Skybox( std::vector<std::string>&faces )
-	{
-		ID = loadCubemap( faces );
-
-		glGenVertexArrays( 1, &VAO);
-		glGenBuffers( 1, &VBO );
-		glBindVertexArray( VAO );
-		glBindBuffer( GL_ARRAY_BUFFER, VBO );
-		glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), &vertices, GL_STATIC_DRAW );
-		glEnableVertexAttribArray( 0 );
-		glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (void*)0 );
-	}
-	~Skybox()
-	{
-		glDeleteVertexArrays( 1, &VAO );
-		glDeleteBuffers( 1, &VBO );
-	}
-	void Draw()
-	{
-		glDepthFunc( GL_LEQUAL );  // change depth function so depth test passes when values are equal to depth buffer's content
-
-		glBindVertexArray( VAO );
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_CUBE_MAP, ID );
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		glDrawArrays( GL_TRIANGLES, 0, 36 );
-		glBindVertexArray( 0 );
-
-		glDepthFunc( GL_LESS ); // set depth function back to default
 	}
 };
 

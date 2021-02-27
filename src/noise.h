@@ -7,7 +7,50 @@
 class PerlinNoise
 {
 public:
+	static float getNoise( float x, float y, float z )
+	{
+		int X = (int)floor( x ) & 255,                  // FIND UNIT CUBE THAT
+			Y = (int)floor( y ) & 255,                  // CONTAINS POINT.
+			Z = (int)floor( z ) & 255;
+		x -= floor( x );                                // FIND RELATIVE X,Y,Z
+		y -= floor( y );                                // OF POINT IN CUBE.
+		z -= floor( z );
+		float u = fade( x ),                                // COMPUTE FADE CURVES
+			v = fade( y ),                                // FOR EACH OF X,Y,Z.
+			w = fade( z );
+		int A = permutation[ X ] + Y, AA = permutation[ A ] + Z, AB = permutation[ A + 1 ] + Z,      // HASH COORDINATES OF
+			B = permutation[ X + 1 ] + Y, BA = permutation[ B ] + Z, BB = permutation[ B + 1 ] + Z;      // THE 8 CUBE CORNERS,
 
+		return lerp( w, lerp( v, lerp( u, grad( permutation[ AA ], x, y, z ),  // AND ADD
+									   grad( permutation[ BA ], x - 1, y, z ) ), // BLENDED
+							  lerp( u, grad( permutation[ AB ], x, y - 1, z ),  // RESULTS
+									grad( permutation[ BB ], x - 1, y - 1, z ) ) ),// FROM  8
+					 lerp( v, lerp( u, grad( permutation[ AA + 1 ], x, y, z - 1 ),  // CORNERS
+									grad( permutation[ BA + 1 ], x - 1, y, z - 1 ) ), // OF CUBE
+						   lerp( u, grad( permutation[ AB + 1 ], x, y - 1, z - 1 ),
+								 grad( permutation[ BB + 1 ], x - 1, y - 1, z - 1 ) ) ) );
+	}
+
+	static float getOctavePerlin( float x, float y, float z, int octaves, float freq = 1, float amp = 1, float persistence = 0.5f )
+	{
+		float total = 0;
+		float frequency = freq;
+		float amplitude = amp;
+		float maxValue = 0;			// Used for normalizing result to 0.0 - 1.0
+		for( int i = 0; i < octaves; i++ )
+		{
+			total += getNoise( x * frequency, y * frequency, z * frequency ) * amplitude;
+
+			maxValue += amplitude;
+
+			amplitude *= persistence;
+			frequency /= persistence;
+		}
+
+		return total / maxValue;
+	}
+
+private:
 	static constexpr const int permutation[] = { 151,160,137,91,90,15,
     131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
     190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -35,7 +78,6 @@ public:
 	49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
 	138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180 };
 	
-
 	static float fade( float t )
 	{
 		return t * t * t * (t * (t * 6 - 15) + 10);
@@ -50,49 +92,6 @@ public:
 		float u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
 			v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-	}
-
-
-	static float getNoise( float x, float y, float z )
-	{
-		int X = (int)floor( x ) & 255,                  // FIND UNIT CUBE THAT
-			Y = (int)floor( y ) & 255,                  // CONTAINS POINT.
-			Z = (int)floor( z ) & 255;
-		x -= floor( x );                                // FIND RELATIVE X,Y,Z
-		y -= floor( y );                                // OF POINT IN CUBE.
-		z -= floor( z );
-		float u = fade( x ),                                // COMPUTE FADE CURVES
-			v = fade( y ),                                // FOR EACH OF X,Y,Z.
-			w = fade( z );
-		int A = permutation[ X ] + Y, AA = permutation[ A ] + Z, AB = permutation[ A + 1 ] + Z,      // HASH COORDINATES OF
-			B = permutation[ X + 1 ] + Y, BA = permutation[ B ] + Z, BB = permutation[ B + 1 ] + Z;      // THE 8 CUBE CORNERS,
-
-		return lerp( w, lerp( v, lerp( u, grad( permutation[ AA ], x, y, z ),  // AND ADD
-									   grad( permutation[ BA ], x - 1, y, z ) ), // BLENDED
-							  lerp( u, grad( permutation[ AB ], x, y - 1, z ),  // RESULTS
-									grad( permutation[ BB ], x - 1, y - 1, z ) ) ),// FROM  8
-					 lerp( v, lerp( u, grad( permutation[ AA + 1 ], x, y, z - 1 ),  // CORNERS
-									grad( permutation[ BA + 1 ], x - 1, y, z - 1 ) ), // OF CUBE
-						   lerp( u, grad( permutation[ AB + 1 ], x, y - 1, z - 1 ),
-								 grad( permutation[ BB + 1 ], x - 1, y - 1, z - 1 ) ) ) );
-	}
-	static float getOctavePerlin( float x, float y, float z, int octaves, float freq = 1, float amp = 1, float persistence = 0.5f )
-	{
-		float total = 0;
-		float frequency = freq;
-		float amplitude = amp;
-		float maxValue = 0;			// Used for normalizing result to 0.0 - 1.0
-		for( int i = 0; i < octaves; i++ )
-		{
-			total += getNoise( x * frequency, y * frequency, z * frequency ) * amplitude;
-
-			maxValue += amplitude;
-
-			amplitude *= persistence;
-			frequency /= persistence;
-		}
-
-		return total / maxValue;
 	}
 };
 

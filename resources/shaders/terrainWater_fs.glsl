@@ -20,7 +20,6 @@ uniform float minimum;
 
 void main()
 {
-//reflective to do 
     vec3 mat_specular=vec3(0.1);
     float shininess=8;
     vec3 color;

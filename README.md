@@ -1,10 +1,10 @@
 # Terrain-Generator-Opengl
 
 List of content 
-- [Setting up](#Setting up a grid of vertices)
-- [Rendering](#Rendering mesh)
+- [Setting up](#Settingupagridofvertices)
+- [Rendering](#Renderingmesh)
 - [Shaders](#Shaders)
-- [Usage](#Program controls)
+- [Usage](#Programcontrols)
 
 ## Setting up a grid of vertices
 	
@@ -24,20 +24,17 @@ Render terrain using one triangle strip. To create one strip for mesh I need to 
 
 For shaders I use Phong shading with Blinn-Phong reflection model.
 
-- texture
-In this shader color fragment depends on diffuse and specular map.
+- Display model with diffuse and specular map.
 ![texture](/readme_res/texture.png)
-- blank
-This shaders diplays vertices.
+- Diplay every vertice of terrain.
 ![texture](/readme_res/points.png)
-- normals
-In this shader displays normals. In geometry shader for each vertice I create line displaying normal vector
+- Display normals, which are created in geometry shader. For each vertice line is created displaying normal vector.
 ![normals](/readme_res/normals.png)
-- gradient with step 
+- Display gradient with step 
 ![step](/readme_res/step.png)
-- gradient
+- Display gradient
 ![gradient](/readme_res/gradient.png)
-- terrain-water 
+- Display custom water and terrain
 ![terrainwater](/readme_res/terrainwater.png)
 
 ## Program controls

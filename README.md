@@ -1,11 +1,5 @@
 # Terrain-Generator-Opengl
 
-List of content 
-- [Setting up](#Settingupagridofvertices)
-- [Rendering](#Renderingmesh)
-- [Shaders](#Shaders)
-- [Usage](#Programcontrols)
-
 ## Setting up a grid of vertices
 	
 Methods of generating vertices

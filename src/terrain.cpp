@@ -27,10 +27,10 @@ Terrain::Terrain( int size, const std::string& diff_map_path, const std::string&
 	setup();
 }
 
-Terrain::Terrain( const Texture& tex, const std::string& diff_map_path, const std::string& spec_map_path )
+Terrain::Terrain( int size, const Texture& tex, const std::string& diff_map_path, const std::string& spec_map_path )
 	:diffuse_map( diff_map_path.c_str() ), specular_map( spec_map_path.c_str() )
 {
-	buildHeightMapFromTexture( tex );
+	buildHeightMapFromTexture( size,tex );
 	buildMesh();
 	buildIndices();
 
@@ -73,14 +73,14 @@ void Terrain::buildHeightMapFromFile(const std::string& file_name )
 	height_min = *input.first;
 }
 
-void Terrain::buildHeightMapFromTexture(const Texture& tex )
+void Terrain::buildHeightMapFromTexture(int size,const Texture& tex )
 {
 	GLubyte* pixels = tex.getPixels();
 
 	int width = tex.getWidth();
 	int height = tex.getHeight();
 
-	height_map.reserve( width*height );
+	height_map.reserve( height*width );
 
 	for( int i = 0; i < height; i++ )
 	{

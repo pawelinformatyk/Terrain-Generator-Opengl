@@ -27,10 +27,10 @@ glm::mat4 P;//projection
 
 enum class Choice : int
 {
-	texture, step_gradient, blank, normals, gradient, terrain_water,skybox
+	texture=1, step_gradient, blank, normals, gradient, terrain_water
 };
 
-Choice display;
+Choice display=Choice::texture;
 std::vector<Shader>shaders;
 Terrain* terrain;
 Skybox* skybox;
@@ -147,7 +147,7 @@ void Draw()
 	terrain->draw( *shader );
 
 	//draw skybox
-	shader = &shaders[ static_cast<int>(Choice::skybox) ];
+	shader = &shaders[ 0 ];//skybox is first 
 	shader->use();
 	shader->setInt( "skybox", 0 );
 
@@ -274,16 +274,7 @@ int main( int argc, char** argv )
 {
 	/*Controls : 
 	
-	display modes 1-wireframe,2-green model with light,3-model color depends on height,4- terrain with texture
 
-	rotate, zoom with mouse
-
-	qa - change height of light source
-	wsad - change position of light source
-
-	[] increase scale 
-
-	space = start/stop animation 
 	*/
 
 	glutInit( &argc, argv );
@@ -304,16 +295,16 @@ int main( int argc, char** argv )
 
 	glEnable( GL_DEPTH_TEST );
 
+	shaders.emplace_back( "resources/shaders/skybox_vs.glsl", "resources/shaders/skybox_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/texture_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/stepGradient_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/blank_vs.glsl", "resources/shaders/blank_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/normals_vs.glsl", "resources/shaders/normals_fs.glsl", "resources/shaders/normals_gs.glsl" );
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/gradient_fs.glsl" );
 	shaders.emplace_back( "resources/shaders/vertexshader.glsl", "resources/shaders/terrainWater_fs.glsl" );
-	shaders.emplace_back( "resources/shaders/skybox_vs.glsl", "resources/shaders/skybox_fs.glsl" );
 
 	//from texture - heightmap 
-	Terrain terr( Texture("resources/textures/earthheightmap.bmp"), "resources/textures/earth.bmp", "resources/textures/earthgray.bmp" );
+	Terrain terr( 1000000,Texture("resources/textures/earthheightmap.bmp"), "resources/textures/earth.bmp", "resources/textures/earthgray.bmp" );
 
 	//random 
 	//Terrain terr( 1000000, "resources/textures/CliffJagged_COL.bmp", "resources/textures/CliffJagged_GLOSS.bmp" );
